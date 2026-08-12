@@ -192,6 +192,84 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 .emp { text-align: center; padding: 36px 16px; color: var(--tm); }
 .eic { font-size: 2.8rem; margin-bottom: 8px; }
 
+/* ── DASHBOARD ─────────────────────────────────────────── */
+.dash-hi { font-size: 0.78rem; color: var(--tm); margin-bottom: 12px; }
+.dash-hi strong { color: var(--m); }
+.sec-title { font-size: 0.72rem; font-weight: 800; color: var(--m); text-transform: uppercase; letter-spacing: 0.6px; margin: 18px 0 8px; display: flex; align-items: center; justify-content: space-between; }
+.sec-title .sec-more { font-size: 0.68rem; font-weight: 700; color: var(--g); text-transform: none; letter-spacing: 0; cursor: pointer; }
+
+.qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.qa-btn { background: #fff; border: none; border-radius: 12px; box-shadow: var(--sh); padding: 12px 4px 9px; display: flex; flex-direction: column; align-items: center; gap: 5px; cursor: pointer; font-family: 'Nunito', sans-serif; }
+.qa-btn:active { transform: scale(0.96); }
+.qa-ic { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.05rem; background: linear-gradient(135deg, var(--m), var(--ml)); color: #fff; }
+.qa-btn.qa-gold .qa-ic { background: linear-gradient(135deg, var(--g), var(--gl)); color: var(--md); }
+.qa-lbl { font-size: 0.62rem; font-weight: 700; color: var(--tx); text-align: center; line-height: 1.15; }
+
+.dcard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
+.dcard { background: #fff; border-radius: 12px; box-shadow: var(--sh); padding: 12px; border-left: 4px solid var(--g); cursor: pointer; }
+.dcard.dc-m { border-left-color: var(--m); }
+.dcard.dc-g { border-left-color: var(--g); }
+.dcard.dc-ok { border-left-color: var(--ok-done); }
+.dcard.dc-warn { border-left-color: var(--ok-pending); }
+.dc-ic { font-size: 1rem; margin-bottom: 4px; }
+.dc-val { font-size: 1.05rem; font-weight: 800; color: var(--m); line-height: 1.2; word-break: break-word; }
+.dc-lbl { font-size: 0.62rem; color: var(--tm); text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+
+.today-card { background: linear-gradient(135deg, var(--md), var(--m)); border-radius: var(--r); padding: 14px; color: #fff; }
+.today-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 4px; }
+.today-stat { text-align: center; }
+.today-num { font-size: 1.15rem; font-weight: 800; color: var(--gl); }
+.today-lbl { font-size: 0.6rem; opacity: 0.85; text-transform: uppercase; letter-spacing: 0.3px; margin-top: 2px; }
+.today-progs { margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 9px; }
+.today-prog-row { display: flex; justify-content: space-between; font-size: 0.76rem; padding: 3px 0; gap: 8px; }
+.today-prog-row .tpn { font-weight: 700; }
+.today-prog-row .tps { opacity: 0.85; }
+
+.up-item { background: #fff; border-radius: 10px; box-shadow: var(--sh); padding: 10px 12px; margin-bottom: 8px; display: flex; align-items: center; gap: 10px; }
+.up-date { flex-shrink: 0; width: 46px; text-align: center; background: var(--crd); border-radius: 8px; padding: 5px 2px; }
+.up-date .ud-day { font-size: 0.95rem; font-weight: 800; color: var(--m); line-height: 1; }
+.up-date .ud-mon { font-size: 0.6rem; color: var(--tm); text-transform: uppercase; }
+.up-info { flex: 1; min-width: 0; }
+.up-name { font-size: 0.82rem; font-weight: 800; color: var(--tx); }
+.up-meta { font-size: 0.68rem; color: var(--tm); margin-top: 1px; }
+.up-amt { text-align: right; flex-shrink: 0; }
+.up-amt .ua-net { font-size: 0.78rem; font-weight: 800; color: var(--g); }
+
+.pay-item { background: #fff; border-radius: 10px; box-shadow: var(--sh); padding: 10px 12px; margin-bottom: 8px; border-left: 4px solid #c0392b; }
+.pay-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.pay-name { font-weight: 800; color: var(--m); font-size: 0.85rem; }
+.pay-prog { font-size: 0.68rem; color: var(--tm); }
+.pay-amts { display: flex; gap: 12px; margin-top: 7px; font-size: 0.72rem; }
+.pay-amts b { display: block; font-size: 0.82rem; }
+.pay-due b { color: #c0392b; }
+.pay-paid b { color: var(--ok-done); }
+.pay-total b { color: var(--tx); }
+
+@media (min-width: 480px) {
+  .qa-grid { grid-template-columns: repeat(4, 1fr); }
+  .dcard-grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (min-width: 720px) {
+  .pg#pg-dashboard { max-width: 640px; margin: 0 auto; }
+}
+
+/* ── PAYMENT MANAGEMENT ───────────────────────────────────── */
+.pmt-item { background: var(--cr); border-radius: 10px; padding: 9px 11px; margin-bottom: 7px; border-left: 3px solid var(--g); }
+.pmt-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.pmt-amt { font-weight: 800; color: var(--m); font-size: 0.9rem; }
+.pmt-mode { font-size: 0.65rem; font-weight: 700; color: var(--g); background: rgba(201,148,42,0.15); border-radius: 10px; padding: 1px 8px; text-transform: uppercase; }
+.pmt-meta { font-size: 0.68rem; color: var(--tm); margin-top: 3px; }
+.pmt-notes { font-size: 0.68rem; color: var(--tm); font-style: italic; margin-top: 2px; }
+.pmt-actions { display: flex; gap: 6px; margin-top: 7px; }
+.pmt-actions button { flex: 1; padding: 6px; font-size: 0.66rem; border-radius: 7px; }
+.pmt-form { background: var(--cr); border-radius: 10px; padding: 12px; margin-top: 10px; }
+.pmt-overpaid { color: var(--g); font-weight: 800; }
+.pl-item { background: #fff; border-radius: 10px; box-shadow: var(--sh); padding: 10px 12px; margin-bottom: 8px; border-left: 4px solid var(--g); }
+.pl-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.pl-name { font-weight: 800; color: var(--m); font-size: 0.82rem; }
+.pl-amt { font-weight: 800; color: var(--g); font-size: 0.88rem; }
+.pl-meta { font-size: 0.68rem; color: var(--tm); margin-top: 3px; }
+
 .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--md); color: #fff; padding: 9px 18px; border-radius: 18px; font-size: 0.82rem; font-weight: 600; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; max-width:88vw; text-overflow:ellipsis; overflow:hidden; }
 .toast.show { opacity: 1; }
 
@@ -215,8 +293,74 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   </div>
 </div>
 
+<!-- HOME DASHBOARD -->
+<div class="pg on" id="pg-dashboard">
+
+  <div class="dash-hi">Welcome back — here's how <strong>Roop Decorators</strong> is doing.</div>
+
+  <div class="sec-title">Quick Actions</div>
+  <div class="qa-grid">
+    <button class="qa-btn qa-gold" onclick="showPg('pg-new')"><span class="qa-ic">➕</span><span class="qa-lbl">New Estimate</span></button>
+    <button class="qa-btn" onclick="goBookings('all')"><span class="qa-ic">📋</span><span class="qa-lbl">Bookings</span></button>
+    <button class="qa-btn" onclick="showPg('pg-customers')"><span class="qa-ic">👥</span><span class="qa-lbl">Customers</span></button>
+    <button class="qa-btn" onclick="showPg('pg-payments')"><span class="qa-ic">💰</span><span class="qa-lbl">Payments</span></button>
+  </div>
+
+  <div class="sec-title">Overview</div>
+  <div class="dcard-grid">
+    <div class="dcard dc-m" onclick="goBookings('all')">
+      <div class="dc-ic">📄</div>
+      <div class="dc-val" id="dc-total-est">0</div>
+      <div class="dc-lbl">Total Estimates</div>
+    </div>
+    <div class="dcard" onclick="goBookings('confirmed')">
+      <div class="dc-ic">🔵</div>
+      <div class="dc-val" id="dc-confirmed">0</div>
+      <div class="dc-lbl">Confirmed Bookings</div>
+    </div>
+    <div class="dcard dc-ok" onclick="goBookings('done')">
+      <div class="dc-ic">🟢</div>
+      <div class="dc-val" id="dc-done">0</div>
+      <div class="dc-lbl">Completed Programs</div>
+    </div>
+    <div class="dcard dc-g" onclick="goBookings('all')">
+      <div class="dc-ic">💵</div>
+      <div class="dc-val" id="dc-amount">₹0</div>
+      <div class="dc-lbl">Total Booking Amount</div>
+    </div>
+    <div class="dcard dc-ok" onclick="showPg('pg-payments')">
+      <div class="dc-ic">✅</div>
+      <div class="dc-val" id="dc-received">₹0</div>
+      <div class="dc-lbl">Total Received</div>
+    </div>
+    <div class="dcard dc-warn" onclick="showPg('pg-payments')">
+      <div class="dc-ic">⚠️</div>
+      <div class="dc-val" id="dc-due">₹0</div>
+      <div class="dc-lbl">Total Due</div>
+    </div>
+  </div>
+
+  <div class="sec-title">Today</div>
+  <div class="today-card">
+    <div class="today-grid">
+      <div class="today-stat"><div class="today-num" id="td-progs">0</div><div class="today-lbl">Programs Today</div></div>
+      <div class="today-stat"><div class="today-num" id="td-confirmed">0</div><div class="today-lbl">Confirmed</div></div>
+      <div class="today-stat"><div class="today-num" id="td-pending">0</div><div class="today-lbl">Pending</div></div>
+      <div class="today-stat"><div class="today-num" id="td-collection">₹0</div><div class="today-lbl">Expected Collection</div></div>
+    </div>
+    <div class="today-progs" id="td-list"></div>
+  </div>
+
+  <div class="sec-title">Upcoming Programs <span class="sec-more" onclick="goBookings('all')">View all →</span></div>
+  <div id="up-list"></div>
+
+  <div class="sec-title">Payment Alerts <span class="sec-more" onclick="showPg('pg-payments')">View all →</span></div>
+  <div id="pay-alert-list"></div>
+
+</div>
+
 <!-- NEW ESTIMATE -->
-<div class="pg on" id="pg-new">
+<div class="pg" id="pg-new">
 
   <div class="edit-banner" id="edit-banner" style="display:none">
     <span>✏️ Editing: <strong id="eb-name"></strong><span class="eno" id="eb-no"></span></span>
@@ -324,6 +468,44 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
     <div class="tr"><span>Advance Received</span><input class="di" id="advance" type="number" placeholder="0" oninput="calcTot()"></div>
     <div class="tr fin"><span>Net Amount</span><span id="net">₹ 0</span></div>
     <div class="tr" style="font-size:0.82rem;opacity:0.92"><span>Balance Due</span><span id="bal">₹ 0</span></div>
+  </div>
+
+  <!-- PAYMENT MANAGEMENT (multi-payment ledger, only for a saved estimate) -->
+  <div class="card" id="pmt-section" style="display:none">
+    <div class="ch">💰 Payment Management</div>
+    <div class="cb">
+      <div class="stat-row" style="margin-bottom:6px">
+        <div class="stat-card"><div class="stat-num" id="pmt-net">₹0</div><div class="stat-lbl">Net Amount</div></div>
+        <div class="stat-card"><div class="stat-num" id="pmt-paid">₹0</div><div class="stat-lbl">Paid</div></div>
+        <div class="stat-card"><div class="stat-num" id="pmt-due">₹0</div><div class="stat-lbl">Due</div></div>
+      </div>
+      <div id="pmt-history"></div>
+      <button class="add-item-btn" onclick="openPaymentForm()">➕ Add Payment</button>
+      <div class="pmt-form" id="pmt-form" style="display:none">
+        <input type="hidden" id="pmt-edit-id">
+        <div class="fr">
+          <div class="fg"><label class="fl">Amount</label><input class="fi" id="pmt-amount" type="number" min="0" placeholder="0"></div>
+          <div class="fg"><label class="fl">Payment Date</label><input class="fi" id="pmt-date" type="date"></div>
+        </div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Payment Mode</label>
+            <select class="fi" id="pmt-mode">
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="Card">Card</option>
+              <option value="Cheque">Cheque</option>
+              <option value="Other">Other</option>
+            </select>
+          </div>
+          <div class="fg"><label class="fl">Notes (optional)</label><input class="fi" id="pmt-notes" type="text" placeholder="e.g. part payment"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn bg" style="flex:1" onclick="savePayment()">💾 Save Payment</button>
+          <button class="btn bo" style="flex:1" onclick="closePaymentForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="brow">
@@ -461,10 +643,74 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   </div>
 </div>
 
+<!-- CUSTOMERS -->
+<div class="pg" id="pg-customers">
+  <div class="sb"><span class="si">🔍</span>
+    <input type="text" id="cust-srch" placeholder="Search customer name..." oninput="renderCustomers()">
+  </div>
+  <div id="cust-list"></div>
+</div>
+
+<!-- PAYMENTS -->
+<div class="pg" id="pg-payments">
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-num" id="pay-st-received">₹0</div><div class="stat-lbl">Total Received</div></div>
+    <div class="stat-card"><div class="stat-num" id="pay-st-due">₹0</div><div class="stat-lbl">Total Due</div></div>
+    <div class="stat-card"><div class="stat-num" id="pay-st-count">0</div><div class="stat-lbl">Payments</div></div>
+  </div>
+  <div class="filter-chips" id="pay-filters">
+    <button class="chip on" data-f="all" onclick="setPaymentFilter('all')">All</button>
+    <button class="chip" data-f="today" onclick="setPaymentFilter('today')">Today</button>
+    <button class="chip" data-f="week" onclick="setPaymentFilter('week')">This Week</button>
+    <button class="chip" data-f="month" onclick="setPaymentFilter('month')">This Month</button>
+    <button class="chip" data-f="custom" onclick="setPaymentFilter('custom')">Custom Range</button>
+  </div>
+  <div class="fr" id="pay-custom-range" style="display:none">
+    <div class="fg"><label class="fl">From</label><input class="fi" id="pay-from" type="date" onchange="applyCustomPaymentRange()"></div>
+    <div class="fg"><label class="fl">To</label><input class="fi" id="pay-to" type="date" onchange="applyCustomPaymentRange()"></div>
+  </div>
+  <div class="sb"><span class="si">🔍</span>
+    <input type="text" id="pay-srch" placeholder="Search name, mobile, estimate no..." oninput="renderPayments()">
+  </div>
+  <div id="pay-list"></div>
+</div>
+
+<!-- CALENDAR -->
+<div class="pg" id="pg-calendar">
+  <div id="cal-list"></div>
+</div>
+
+<!-- RECYCLE BIN -->
+<div class="pg" id="pg-trash">
+  <div class="card" style="margin-bottom:12px">
+    <div class="cb" style="display:flex;align-items:center;justify-content:space-between;padding-top:12px;padding-bottom:12px">
+      <span style="font-size:0.75rem;color:var(--tm)">Deleted estimates are kept for 90 days before auto-purge.</span>
+      <button class="btn" style="padding:8px 12px;font-size:0.7rem;background:#c0392b;color:#fff;flex:0" onclick="emptyTrash()">Empty Bin</button>
+    </div>
+  </div>
+  <div id="trash-list"></div>
+</div>
+
+<!-- MORE -->
+<div class="pg" id="pg-more">
+  <div class="card">
+    <div class="ch">📂 More Options</div>
+    <div class="cb" style="display:flex;flex-direction:column;gap:8px;padding-top:12px;padding-bottom:12px">
+      <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-set')">⚙️ Settings &amp; Business Info</button>
+      <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-tmpl-list')">📑 My Templates</button>
+      <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-hist')">📋 All Bookings / History</button>
+      <button class="btn bo" style="justify-content:flex-start;position:relative" onclick="showPg('pg-trash')">🗑️ Recycle Bin <span id="trash-count-badge" style="margin-left:auto;background:#c0392b;color:#fff;border-radius:10px;padding:1px 8px;font-size:0.65rem"></span></button>
+    </div>
+  </div>
+  <div style="text-align:center;font-size:0.7rem;color:var(--tm);margin-top:18px;padding-bottom:10px">Roop Decorators Estimate App ✦ v2.0</div>
+</div>
+
 <nav class="bnav">
-  <button class="nb on" id="nb-new" onclick="showPg('pg-new')"><span class="ic">✏️</span>New</button>
-  <button class="nb" id="nb-hist" onclick="showPg('pg-hist')"><span class="ic">📋</span>History</button>
-  <button class="nb" id="nb-set" onclick="showPg('pg-set')"><span class="ic">⚙️</span>Settings</button>
+  <button class="nb on" id="nb-home" onclick="showPg('pg-dashboard')"><span class="ic">🏠</span>Home</button>
+  <button class="nb" id="nb-hist" onclick="showPg('pg-hist')"><span class="ic">📋</span>Bookings</button>
+  <button class="nb" id="nb-cal" onclick="showPg('pg-calendar')"><span class="ic">📅</span>Calendar</button>
+  <button class="nb" id="nb-cust" onclick="showPg('pg-customers')"><span class="ic">👥</span>Customers</button>
+  <button class="nb" id="nb-more" onclick="showPg('pg-more')"><span class="ic">⋯</span>More</button>
 </nav>
 
 <div class="mini-total" id="mini-total" onclick="document.getElementById('tb-card').scrollIntoView({behavior:'smooth'})"></div>
@@ -567,12 +813,28 @@ function showPg(id) {
   document.querySelectorAll('.pg').forEach(p => p.classList.remove('on'));
   document.getElementById(id).classList.add('on');
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
-  if (id === 'pg-new')  { document.getElementById('nb-new').classList.add('on'); populateCustomerList(); populateTplQuickSwitch(); calcTot(); }
+  if (id === 'pg-dashboard') { document.getElementById('nb-home').classList.add('on'); renderDashboard(); }
+  if (id === 'pg-new')  { populateCustomerList(); populateTplQuickSwitch(); calcTot(); renderPaymentSection(); }
   if (id === 'pg-hist') { document.getElementById('nb-hist').classList.add('on'); renderHist(); }
-  if (id === 'pg-set')  { document.getElementById('nb-set').classList.add('on'); renderSettingsForm(); }
+  if (id === 'pg-set')  { renderSettingsForm(); }
   if (id === 'pg-tmpl-list') { renderTplList(); }
+  if (id === 'pg-customers') { document.getElementById('nb-cust').classList.add('on'); renderCustomers(); }
+  if (id === 'pg-payments')  { renderPayments(); }
+  if (id === 'pg-calendar')  { document.getElementById('nb-cal').classList.add('on'); renderCalendar(); }
+  if (id === 'pg-more') { document.getElementById('nb-more').classList.add('on'); renderTrash(); }
+  if (id === 'pg-trash') { renderTrash(); }
   if (id !== 'pg-new') { const mini = document.getElementById('mini-total'); if (mini) mini.style.display = 'none'; }
   window.scrollTo(0, 0);
+}
+
+// ── DASHBOARD NAVIGATION HELPERS ────────────────────────────
+function goBookings(status) {
+  statusFilter = status || 'all';
+  showPg('pg-hist');
+  setTimeout(() => {
+    document.querySelectorAll('#status-filters .chip').forEach(c => c.classList.toggle('on', c.dataset.st === statusFilter));
+    renderHist();
+  }, 0);
 }
 
 function upDay() {
@@ -943,6 +1205,7 @@ function clearForm() {
   currentEstId = null;
   document.getElementById('edit-banner').style.display = 'none';
   document.getElementById('add-item-form').classList.remove('open');
+  renderPaymentSection();
   const searchEl = document.getElementById('item-search');
   if (searchEl) searchEl.value = '';
   renderItems();
@@ -1220,6 +1483,8 @@ function applyBranding() {
 function exportBackup() {
   const data = {
     estimates: JSON.parse(localStorage.getItem('roop_ests') || '[]'),
+    trash: JSON.parse(localStorage.getItem('roop_trash') || '[]'),
+    payments: JSON.parse(localStorage.getItem('roop_payments') || '[]'),
     settings: JSON.parse(localStorage.getItem('roop_settings') || 'null'),
     templates: JSON.parse(localStorage.getItem('roop_templates') || '[]'),
     counter: localStorage.getItem('roop_est_counter') || '0',
@@ -1246,6 +1511,10 @@ function importBackup(ev) {
       const data = JSON.parse(reader.result);
       if (!confirm('હાલનો ડેટા replace થઈ જશે. Import કરવું છે?')) return;
       if (data.estimates) localStorage.setItem('roop_ests', JSON.stringify(data.estimates));
+      if (data.trash) localStorage.setItem('roop_trash', JSON.stringify(data.trash));
+      // Older backups won't have `payments` — treat that as an empty payment
+      // store rather than erroring, and never touch what's already saved.
+      if (Array.isArray(data.payments)) localStorage.setItem('roop_payments', JSON.stringify(data.payments));
       if (data.settings) localStorage.setItem('roop_settings', JSON.stringify(data.settings));
       if (data.templates) localStorage.setItem('roop_templates', JSON.stringify(data.templates));
       if (data.counter) localStorage.setItem('roop_est_counter', String(data.counter));
@@ -1259,9 +1528,11 @@ function importBackup(ev) {
 }
 
 function clearAllData() {
-  if (!confirm('બધો ડેટા (estimates + settings) કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
+  if (!confirm('બધો ડેટા (estimates + payments + settings + recycle bin) કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
   if (!confirm('ફરી ખાતરી કરો: ડેટા પાછો નહિ મળે. Continue?')) return;
   localStorage.removeItem('roop_ests');
+  localStorage.removeItem('roop_trash');
+  localStorage.removeItem('roop_payments');
   localStorage.removeItem('roop_settings');
   localStorage.removeItem('roop_est_counter');
   showToast('Data cleared, reloading...');
@@ -1489,10 +1760,172 @@ function saveTemplate() {
 }
 
 // ── HISTORY ────────────────────────────────────────────────
-function estNet(e) {
+// ── CENTRAL CALCULATION FUNCTION ────────────────────────────
+// Single source of truth for all amount math across the app
+// (form totals, history cards, dashboard, payments, print).
+function estAmounts(e) {
   const activeItems = (e.items || []).filter(it => (it.qty || 0) > 0);
   const total = activeItems.reduce((s, it) => s + it.qty * getRate(it), 0);
-  return total - (e.disc || 0);
+  const disc = e.disc || 0;
+  const advance = e.advance || 0;
+  const net = total - disc;
+  const balance = net - advance;
+  return { total, disc, advance, net, balance, status: e.status || 'pending' };
+}
+
+function estNet(e) {
+  return estAmounts(e).net;
+}
+
+// ── PAYMENT MANAGEMENT (multi-payment ledger) ───────────────
+// roop_payments: [{ paymentId, estimateId, amount, date, mode, notes, createdAt }]
+function getPaymentsForEst(estimateId) {
+  const all = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  return all.filter(p => p.estimateId === estimateId);
+}
+
+// SINGLE central function for Paid/Due — used by booking view, dashboard,
+// customers, and the payments ledger. Never returns a negative due; any
+// amount paid beyond the net amount is reported separately as `overpaid`.
+function paymentSummary(estimateId) {
+  const e = getEstById(estimateId);
+  if (!e) return { net: 0, paid: 0, due: 0, overpaid: 0, payments: [] };
+  const net = estAmounts(e).net;
+  const payments = getPaymentsForEst(estimateId);
+  const paid = payments.reduce((s, p) => s + (p.amount || 0), 0);
+  const due = Math.max(0, net - paid);
+  const overpaid = Math.max(0, paid - net);
+  return { net, paid, due, overpaid, payments };
+}
+
+// One-time, idempotent migration: an old estimate's `advance` becomes its
+// first payment record, but only if that estimate has no payment yet.
+// Never touches roop_ests — only ever appends to roop_payments.
+function migrateAdvanceToPayments() {
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const payments = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  let changed = false;
+  ests.forEach(e => {
+    const adv = e.advance || 0;
+    if (adv > 0 && !payments.some(p => p.estimateId === e.id)) {
+      payments.push({
+        paymentId: 'mig_' + e.id,
+        estimateId: e.id,
+        amount: adv,
+        date: e.pDate || todayStr(),
+        mode: 'Existing Advance',
+        notes: 'Migrated from existing Advance',
+        createdAt: new Date().toISOString()
+      });
+      changed = true;
+    }
+  });
+  if (changed) localStorage.setItem('roop_payments', JSON.stringify(payments));
+}
+
+let editingPaymentId = null;
+
+function openPaymentForm(paymentId) {
+  const form = document.getElementById('pmt-form');
+  form.style.display = 'block';
+  if (paymentId) {
+    const all = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+    const p = all.find(x => x.paymentId === paymentId);
+    if (!p) return;
+    document.getElementById('pmt-edit-id').value = p.paymentId;
+    document.getElementById('pmt-amount').value = p.amount;
+    document.getElementById('pmt-date').value = p.date || '';
+    document.getElementById('pmt-mode').value = ['Cash','UPI','Bank Transfer','Card','Cheque','Other'].includes(p.mode) ? p.mode : 'Other';
+    document.getElementById('pmt-notes').value = p.notes || '';
+    editingPaymentId = p.paymentId;
+  } else {
+    document.getElementById('pmt-edit-id').value = '';
+    document.getElementById('pmt-amount').value = '';
+    document.getElementById('pmt-date').value = todayStr();
+    document.getElementById('pmt-mode').value = 'Cash';
+    document.getElementById('pmt-notes').value = '';
+    editingPaymentId = null;
+  }
+  form.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function closePaymentForm() {
+  document.getElementById('pmt-form').style.display = 'none';
+  editingPaymentId = null;
+}
+
+function savePayment() {
+  if (!currentEstId) { showToast('પહેલા estimate save કરો'); return; }
+  const amount = parseFloat(document.getElementById('pmt-amount').value);
+  const date = document.getElementById('pmt-date').value;
+  const mode = document.getElementById('pmt-mode').value;
+  const notes = document.getElementById('pmt-notes').value.trim();
+
+  if (!(amount > 0)) { showToast('Amount 0 થી વધારે હોવો જોઈએ'); return; }
+  if (!date) { showToast('Payment date જરૂરી છે'); return; }
+  if (!mode) { showToast('Payment mode પસંદ કરો'); return; }
+
+  const all = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  const editId = document.getElementById('pmt-edit-id').value;
+  if (editId) {
+    const idx = all.findIndex(p => p.paymentId === editId);
+    if (idx !== -1) all[idx] = Object.assign({}, all[idx], { amount, date, mode, notes });
+    showToast('✓ Payment updated');
+  } else {
+    all.push({
+      paymentId: 'pmt_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      estimateId: currentEstId,
+      amount, date, mode, notes,
+      createdAt: new Date().toISOString()
+    });
+    showToast('✓ Payment added');
+  }
+  localStorage.setItem('roop_payments', JSON.stringify(all));
+  closePaymentForm();
+  renderPaymentSection();
+  renderDashboard();
+}
+
+function deletePayment(paymentId) {
+  if (!confirm('આ payment ડિલીટ કરવી છે?')) return;
+  let all = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  all = all.filter(p => p.paymentId !== paymentId);
+  localStorage.setItem('roop_payments', JSON.stringify(all));
+  showToast('Payment ડિલીટ થઈ');
+  renderPaymentSection();
+  renderDashboard();
+}
+
+function renderPaymentSection() {
+  const sec = document.getElementById('pmt-section');
+  if (!sec) return;
+  if (!currentEstId) { sec.style.display = 'none'; closePaymentForm(); return; }
+  sec.style.display = 'block';
+  const sum = paymentSummary(currentEstId);
+  document.getElementById('pmt-net').textContent = '₹' + sum.net.toLocaleString('en-IN');
+  document.getElementById('pmt-paid').textContent = '₹' + sum.paid.toLocaleString('en-IN');
+  document.getElementById('pmt-due').textContent = '₹' + sum.due.toLocaleString('en-IN');
+
+  const hist = document.getElementById('pmt-history');
+  if (!sum.payments.length) {
+    hist.innerHTML = '<div class="emp" style="padding:16px"><div class="eic">💳</div><div>હજુ કોઈ payment નથી</div></div>';
+  } else {
+    const sorted = sum.payments.slice().sort((a, b) => (a.date < b.date ? 1 : (a.date > b.date ? -1 : 0)));
+    hist.innerHTML = sorted.map(p =>
+      '<div class="pmt-item">' +
+        '<div class="pmt-top"><span class="pmt-amt">₹' + (p.amount || 0).toLocaleString('en-IN') + '</span><span class="pmt-mode">' + esc(p.mode) + '</span></div>' +
+        '<div class="pmt-meta">' + esc(p.date || '') + '</div>' +
+        (p.notes ? '<div class="pmt-notes">' + esc(p.notes) + '</div>' : '') +
+        '<div class="pmt-actions">' +
+          '<button class="btn bo" onclick="openPaymentForm(\'' + p.paymentId + '\')">✏️ Edit</button>' +
+          '<button class="btn" style="background:#c0392b;color:#fff" onclick="deletePayment(\'' + p.paymentId + '\')">🗑️ Delete</button>' +
+        '</div>' +
+      '</div>'
+    ).join('');
+  }
+  if (sum.overpaid > 0) {
+    hist.innerHTML += '<div class="pmt-overpaid" style="text-align:center;margin-top:6px;font-size:0.75rem">✓ Fully paid — ₹' + sum.overpaid.toLocaleString('en-IN') + ' received extra</div>';
+  }
 }
 
 function getEstById(id) {
@@ -1596,6 +2029,7 @@ function loadEst(id) {
   currentEstId = e.id;
   showEditBanner(e);
   renderItems();
+  renderPaymentSection();
   showPg('pg-new');
 }
 
@@ -1605,11 +2039,359 @@ function printEst(id) {
 }
 
 function delEst(id) {
-  if (!confirm('આ estimate ડિલીટ કરવી છે?')) return;
+  if (!confirm('આ estimate Recycle Bin માં move કરવી છે?')) return;
   const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
   const idx = list.findIndex(e => e.id === id);
-  if (idx !== -1) { list.splice(idx, 1); localStorage.setItem('roop_ests', JSON.stringify(list)); }
+  if (idx !== -1) {
+    const [removed] = list.splice(idx, 1);
+    removed.deletedAt = new Date().toISOString();
+    const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+    trash.unshift(removed);
+    localStorage.setItem('roop_trash', JSON.stringify(trash));
+    localStorage.setItem('roop_ests', JSON.stringify(list));
+    showToast('🗑️ Estimate moved to Recycle Bin');
+  }
   renderHist();
+}
+
+// ── RECYCLE BIN ────────────────────────────────────────────
+function restoreEst(id) {
+  const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+  const idx = trash.findIndex(e => e.id === id);
+  if (idx === -1) return;
+  const [restored] = trash.splice(idx, 1);
+  delete restored.deletedAt;
+  const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  list.unshift(restored);
+  localStorage.setItem('roop_ests', JSON.stringify(list));
+  localStorage.setItem('roop_trash', JSON.stringify(trash));
+  showToast('✓ Estimate restored');
+  renderTrash();
+}
+
+function permanentDeleteEst(id) {
+  if (!confirm('આ estimate કાયમ માટે ડિલીટ થશે, પાછી નહિ મળે. ખાતરી છે?')) return;
+  const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+  const idx = trash.findIndex(e => e.id === id);
+  if (idx !== -1) { trash.splice(idx, 1); localStorage.setItem('roop_trash', JSON.stringify(trash)); }
+  renderTrash();
+}
+
+function emptyTrash() {
+  const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+  if (!trash.length) return;
+  if (!confirm('Recycle Bin ની બધી (' + trash.length + ') estimates કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
+  if (!confirm('ફરી ખાતરી કરો: આ ડેટા પાછો નહિ મળે. Continue?')) return;
+  localStorage.setItem('roop_trash', '[]');
+  renderTrash();
+}
+
+function purgeOldTrash() {
+  // Auto-remove items sitting in trash for more than 90 days
+  const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+  if (!trash.length) return;
+  const cutoff = Date.now() - 90 * 24 * 60 * 60 * 1000;
+  const kept = trash.filter(e => {
+    const t = e.deletedAt ? new Date(e.deletedAt).getTime() : Date.now();
+    return t >= cutoff;
+  });
+  if (kept.length !== trash.length) localStorage.setItem('roop_trash', JSON.stringify(kept));
+}
+
+function renderTrash() {
+  const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+  const badge = document.getElementById('trash-count-badge');
+  if (badge) badge.textContent = trash.length ? String(trash.length) : '';
+  const cont = document.getElementById('trash-list');
+  if (!cont) return;
+  if (!trash.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">🗑️</div><div>Recycle Bin ખાલી છે</div></div>';
+    return;
+  }
+  cont.innerHTML = trash.map(e => {
+    const a = estAmounts(e);
+    const delDate = e.deletedAt ? new Date(e.deletedAt).toLocaleDateString('en-IN') : '';
+    return '<div class="ec">' +
+      '<div class="et"><span class="en">' + esc(e.cName || 'Unknown') + '</span><span class="ea">₹' + a.net.toLocaleString('en-IN') + '</span></div>' +
+      '<div class="em">' + esc(e.pType || 'Program') + (e.pDate ? ' · ' + esc(e.pDate) : '') + '</div>' +
+      '<div class="em" style="color:var(--tm)">Deleted: ' + delDate + ' · Auto-purges after 90 days</div>' +
+      '<div style="display:flex;gap:8px;margin-top:8px">' +
+        '<button class="btn bo" style="flex:1;padding:8px;font-size:0.72rem" onclick="restoreEst(' + e.id + ')">↩️ Restore</button>' +
+        '<button class="btn" style="flex:1;padding:8px;font-size:0.72rem;background:#c0392b;color:#fff" onclick="permanentDeleteEst(' + e.id + ')">❌ Delete Forever</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── DATE HELPERS ───────────────────────────────────────────
+function todayStr() {
+  const d = new Date();
+  const local = new Date(d.getTime() - d.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+}
+const MON = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function fmtDateShort(dstr) {
+  if (!dstr) return { d: '--', m: '' };
+  const d = new Date(dstr + 'T00:00:00');
+  if (isNaN(d)) return { d: '--', m: '' };
+  return { d: String(d.getDate()).padStart(2, '0'), m: MON[d.getMonth()] };
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────
+function renderDashboard() {
+  const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const today = todayStr();
+
+  const totalEstimates = list.length;
+  const confirmedCount = list.filter(e => (e.status || 'pending') === 'confirmed').length;
+  const doneCount = list.filter(e => (e.status || 'pending') === 'done').length;
+
+  // "Bookings" = confirmed + done estimates (i.e. not just a draft/pending estimate)
+  const bookings = list.filter(e => (e.status || 'pending') !== 'pending');
+  let bookingAmount = 0, received = 0, due = 0;
+  bookings.forEach(e => {
+    const amt = estAmounts(e);
+    const pay = paymentSummary(e.id);
+    bookingAmount += amt.net;
+    received += pay.paid;
+    due += pay.due;
+  });
+
+  document.getElementById('dc-total-est').textContent = totalEstimates;
+  document.getElementById('dc-confirmed').textContent = confirmedCount;
+  document.getElementById('dc-done').textContent = doneCount;
+  document.getElementById('dc-amount').textContent = '₹' + bookingAmount.toLocaleString('en-IN');
+  document.getElementById('dc-received').textContent = '₹' + received.toLocaleString('en-IN');
+  document.getElementById('dc-due').textContent = '₹' + due.toLocaleString('en-IN');
+
+  // TODAY
+  const todaysProgs = list.filter(e => e.pDate === today);
+  const todayConfirmed = todaysProgs.filter(e => (e.status || 'pending') === 'confirmed').length;
+  const todayPending = todaysProgs.filter(e => (e.status || 'pending') === 'pending').length;
+  const todayCollection = todaysProgs.reduce((s, e) => s + paymentSummary(e.id).due, 0);
+
+  document.getElementById('td-progs').textContent = todaysProgs.length;
+  document.getElementById('td-confirmed').textContent = todayConfirmed;
+  document.getElementById('td-pending').textContent = todayPending;
+  document.getElementById('td-collection').textContent = '₹' + todayCollection.toLocaleString('en-IN');
+
+  const tdList = document.getElementById('td-list');
+  if (!todaysProgs.length) {
+    tdList.innerHTML = '<div class="today-prog-row"><span class="tps">આજે કોઈ પ્રોગ્રામ નથી</span></div>';
+  } else {
+    tdList.innerHTML = todaysProgs.map(e =>
+      '<div class="today-prog-row"><span class="tpn">' + esc(e.cName) + '</span><span class="tps">' + esc(e.pType || 'Program') + '</span></div>'
+    ).join('');
+  }
+
+  // UPCOMING (next 5, strictly after today, not yet done)
+  const upcoming = list
+    .filter(e => e.pDate && e.pDate > today && (e.status || 'pending') !== 'done')
+    .sort((a, b) => a.pDate < b.pDate ? -1 : (a.pDate > b.pDate ? 1 : 0))
+    .slice(0, 5);
+
+  const upList = document.getElementById('up-list');
+  if (!upcoming.length) {
+    upList.innerHTML = '<div class="emp"><div class="eic">🗓️</div><div>કોઈ upcoming program નથી</div></div>';
+  } else {
+    upList.innerHTML = upcoming.map(e => {
+      const dt = fmtDateShort(e.pDate);
+      const a = estAmounts(e);
+      return '<div class="up-item" onclick="loadEst(' + e.id + ')">' +
+        '<div class="up-date"><div class="ud-day">' + dt.d + '</div><div class="ud-mon">' + dt.m + '</div></div>' +
+        '<div class="up-info"><div class="up-name">' + esc(e.cName) + '</div>' +
+        '<div class="up-meta">' + esc(e.pType || 'Program') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + '</div></div>' +
+        '<div class="up-amt"><div class="ua-net">₹' + a.net.toLocaleString('en-IN') + '</div></div>' +
+      '</div>';
+    }).join('');
+  }
+
+  // PAYMENT ALERTS (customers with outstanding due, top 5 by due amount)
+  const dueList = list
+    .map(e => Object.assign({ _pay: paymentSummary(e.id) }, e))
+    .filter(e => e._pay.due > 0)
+    .sort((a, b) => b._pay.due - a._pay.due)
+    .slice(0, 5);
+
+  const payList = document.getElementById('pay-alert-list');
+  if (!dueList.length) {
+    payList.innerHTML = '<div class="emp"><div class="eic">✅</div><div>કોઈ payment બાકી નથી</div></div>';
+  } else {
+    payList.innerHTML = dueList.map(e => buildPayItemHtml(e)).join('');
+  }
+}
+
+// ── CUSTOMERS ──────────────────────────────────────────────
+function renderCustomers() {
+  const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const q = (document.getElementById('cust-srch').value || '').toLowerCase();
+
+  const map = {};
+  list.forEach(e => {
+    const key = (e.cName || 'Unknown').trim();
+    if (!map[key]) map[key] = { name: key, mob: e.cMob || '', count: 0, net: 0, paid: 0, due: 0, lastDate: '' };
+    const amt = estAmounts(e);
+    const pay = paymentSummary(e.id);
+    map[key].count += 1;
+    map[key].net += amt.net;
+    map[key].paid += pay.paid;
+    map[key].due += pay.due;
+    if (!map[key].mob && e.cMob) map[key].mob = e.cMob;
+    if (e.pDate && e.pDate > map[key].lastDate) map[key].lastDate = e.pDate;
+  });
+
+  let customers = Object.values(map);
+  if (q) customers = customers.filter(c => c.name.toLowerCase().includes(q));
+  customers.sort((a, b) => a.name.localeCompare(b.name));
+
+  const cont = document.getElementById('cust-list');
+  if (!customers.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">👥</div><div>કોઈ Customer નથી</div></div>';
+    return;
+  }
+  cont.innerHTML = customers.map(c =>
+    '<div class="ec" onclick="goBookings(\'all\'); document.getElementById(\'srch\').value=\'' + esc(c.name).replace(/'/g, "\\'") + '\'; renderHist();">' +
+      '<div class="et"><span class="en">' + esc(c.name) + '</span><span class="ea">₹' + c.net.toLocaleString('en-IN') + '</span></div>' +
+      '<div class="em">' + (c.mob ? '📞 ' + esc(c.mob) : 'No mobile') + ' · ' + c.count + ' estimate(s)</div>' +
+      (c.due > 0 ? '<div class="em" style="color:#c0392b;font-weight:700;margin-top:3px">Due: ₹' + c.due.toLocaleString('en-IN') + '</div>' : '<div class="em" style="color:var(--ok-done);font-weight:700;margin-top:3px">Fully Paid</div>') +
+    '</div>'
+  ).join('');
+}
+
+// ── PAYMENTS (ledger view, backed by roop_payments) ─────────
+function buildPayItemHtml(e) {
+  const pay = e._pay || paymentSummary(e.id);
+  let waBtn = '';
+  const mob = (e.cMob || '').replace(/\D/g, '');
+  if (mob) {
+    const phone = mob.length === 10 ? '91' + mob : mob;
+    const msg = encodeURIComponent('નમસ્તે ' + e.cName + ', તમારી ' + (e.pType || 'program') + ' estimate (' + (e.estNo || '') + ') માટે ₹' + pay.due.toLocaleString('en-IN') + ' બાકી છે. કૃપા કરી ચૂકવણી કરવા વિનંતી. — Roop Decorators');
+    waBtn = '<button class="btn bw" style="padding:6px 10px;font-size:0.7rem;flex:0" onclick="event.stopPropagation();window.open(\'https://wa.me/' + phone + '?text=' + msg + '\',\'_blank\')">💬 Remind</button>';
+  }
+  return '<div class="pay-item" onclick="loadEst(' + e.id + ')">' +
+    '<div class="pay-top"><span class="pay-name">' + esc(e.cName) + '</span><span class="pay-prog">' + esc(e.pType || 'Program') + (e.pDate ? ' · ' + esc(e.pDate) : '') + '</span></div>' +
+    '<div class="pay-amts">' +
+      '<div class="pay-total">Total<b>₹' + pay.net.toLocaleString('en-IN') + '</b></div>' +
+      '<div class="pay-paid">Paid<b>₹' + pay.paid.toLocaleString('en-IN') + '</b></div>' +
+      '<div class="pay-due">Due<b>₹' + pay.due.toLocaleString('en-IN') + '</b></div>' +
+      waBtn +
+    '</div>' +
+  '</div>';
+}
+
+let paymentFilter = 'all';
+let paymentCustomRange = null;
+
+function setPaymentFilter(f) {
+  paymentFilter = f;
+  document.querySelectorAll('#pay-filters .chip').forEach(c => c.classList.toggle('on', c.dataset.f === f));
+  const customRow = document.getElementById('pay-custom-range');
+  if (customRow) customRow.style.display = (f === 'custom') ? 'grid' : 'none';
+  renderPayments();
+}
+
+function applyCustomPaymentRange() {
+  const from = document.getElementById('pay-from').value;
+  const to = document.getElementById('pay-to').value;
+  paymentCustomRange = (from && to) ? { from, to } : null;
+  renderPayments();
+}
+
+function renderPayments() {
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const estMap = {};
+  ests.forEach(e => { estMap[e.id] = e; });
+
+  const allPayments = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  const today = todayStr();
+  let payments = allPayments.slice();
+
+  if (paymentFilter === 'today') {
+    payments = payments.filter(p => p.date === today);
+  } else if (paymentFilter === 'week') {
+    const d = new Date(today + 'T00:00:00');
+    const day = d.getDay();
+    const monday = new Date(d); monday.setDate(d.getDate() - ((day + 6) % 7));
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    const fromS = monday.toISOString().slice(0, 10);
+    const toS = sunday.toISOString().slice(0, 10);
+    payments = payments.filter(p => p.date >= fromS && p.date <= toS);
+  } else if (paymentFilter === 'month') {
+    const ym = today.slice(0, 7);
+    payments = payments.filter(p => (p.date || '').slice(0, 7) === ym);
+  } else if (paymentFilter === 'custom' && paymentCustomRange) {
+    payments = payments.filter(p => p.date >= paymentCustomRange.from && p.date <= paymentCustomRange.to);
+  }
+
+  const srchEl = document.getElementById('pay-srch');
+  const q = srchEl ? srchEl.value.toLowerCase().trim() : '';
+  if (q) {
+    payments = payments.filter(p => {
+      const e = estMap[p.estimateId];
+      if (!e) return false;
+      return (e.cName || '').toLowerCase().includes(q) ||
+             (e.cMob || '').toLowerCase().includes(q) ||
+             (e.estNo || '').toLowerCase().includes(q);
+    });
+  }
+
+  payments.sort((a, b) => (a.date < b.date ? 1 : (a.date > b.date ? -1 : 0)));
+
+  // Summary cards always reflect the full ledger (not the filtered/searched list)
+  const totalReceived = allPayments.reduce((s, p) => s + (p.amount || 0), 0);
+  const totalDue = ests.reduce((s, e) => s + paymentSummary(e.id).due, 0);
+  document.getElementById('pay-st-received').textContent = '₹' + totalReceived.toLocaleString('en-IN');
+  document.getElementById('pay-st-due').textContent = '₹' + totalDue.toLocaleString('en-IN');
+  document.getElementById('pay-st-count').textContent = allPayments.length;
+
+  const cont = document.getElementById('pay-list');
+  if (!payments.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">💳</div><div>કોઈ payment મળી નથી</div></div>';
+    return;
+  }
+  cont.innerHTML = payments.map(p => {
+    const e = estMap[p.estimateId];
+    const name = e ? e.cName : 'Unknown / Deleted estimate';
+    const estNo = e ? (e.estNo || '') : '';
+    return '<div class="pl-item"' + (e ? (' onclick="loadEst(' + e.id + ')"') : '') + '>' +
+      '<div class="pl-top"><span class="pl-name">' + esc(name) + '</span><span class="pl-amt">₹' + (p.amount || 0).toLocaleString('en-IN') + '</span></div>' +
+      '<div class="pl-meta">' + esc(p.date || '') + (estNo ? ' · ' + esc(estNo) : '') + ' · <span class="pmt-mode">' + esc(p.mode) + '</span></div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── CALENDAR (agenda view) ───────────────────────────────────
+function renderCalendar() {
+  const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const today = todayStr();
+  const withDates = list.filter(e => e.pDate).sort((a, b) => a.pDate < b.pDate ? -1 : (a.pDate > b.pDate ? 1 : 0));
+
+  const cont = document.getElementById('cal-list');
+  if (!withDates.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">📅</div><div>કોઈ program date set નથી</div></div>';
+    return;
+  }
+
+  const groups = [];
+  const map = {};
+  withDates.forEach(e => {
+    if (!map[e.pDate]) { map[e.pDate] = []; groups.push(e.pDate); }
+    map[e.pDate].push(e);
+  });
+
+  cont.innerHTML = groups.map(dstr => {
+    const dt = fmtDateShort(dstr);
+    const isToday = dstr === today;
+    const rows = map[dstr].map(e => {
+      const a = estAmounts(e);
+      return '<div class="up-item" style="margin-bottom:6px" onclick="loadEst(' + e.id + ')">' +
+        '<div class="up-info"><div class="up-name">' + esc(e.cName) + '</div>' +
+        '<div class="up-meta">' + esc(e.pType || 'Program') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + ' · <span class="st-sel st-' + (e.status || 'pending') + '" style="padding:1px 6px">' + (e.status || 'pending') + '</span></div></div>' +
+        '<div class="up-amt"><div class="ua-net">₹' + a.net.toLocaleString('en-IN') + '</div></div>' +
+      '</div>';
+    }).join('');
+    return '<div class="sec-title" style="margin-top:14px">' + (isToday ? '🔴 Today · ' : '') + dt.d + ' ' + dt.m + ' · ' + esc(dstr) + '</div>' + rows;
+  }).join('');
 }
 
 // ── TOAST ──────────────────────────────────────────────────
@@ -1626,6 +2408,14 @@ renderItems();
 applyBranding();
 populateCustomerList();
 populateTplQuickSwitch();
+purgeOldTrash();
+migrateAdvanceToPayments();
+renderDashboard();
+(function initTrashBadge() {
+  const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
+  const badge = document.getElementById('trash-count-badge');
+  if (badge && trash.length) badge.textContent = String(trash.length);
+})();
 
 const mobInput = document.getElementById('c-mob');
 if (mobInput) mobInput.addEventListener('blur', tryAutofillFromMobile);
