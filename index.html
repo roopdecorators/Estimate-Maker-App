@@ -150,6 +150,7 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 
 /* HISTORY */
 .stat-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; margin-bottom:12px; }
+.stat-row-4 { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:12px; }
 .stat-card { background:#fff; border-radius:10px; box-shadow: var(--sh); padding:10px 5px; text-align:center; }
 .stat-num { font-size:1.0rem; font-weight:800; color: var(--m); white-space:nowrap; }
 .stat-lbl { font-size:0.6rem; color: var(--tm); text-transform:uppercase; letter-spacing:0.3px; margin-top:2px; }
@@ -270,6 +271,47 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 .pl-amt { font-weight: 800; color: var(--g); font-size: 0.88rem; }
 .pl-meta { font-size: 0.68rem; color: var(--tm); margin-top: 3px; }
 
+/* ── CALENDAR (month grid) ────────────────────────────────── */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-nav-btn { background: #fff; border: none; box-shadow: var(--sh); border-radius: 8px; width: 38px; height: 38px; font-size: 0.9rem; color: var(--m); cursor: pointer; }
+.cal-nav-btn:active { transform: scale(0.94); }
+.cal-month-lbl { font-size: 1rem; font-weight: 800; color: var(--m); }
+.cal-today-btn { display: block; margin: 0 auto 12px; background: linear-gradient(135deg, var(--g), var(--gl)); color: var(--md); border: none; border-radius: 20px; padding: 7px 18px; font-weight: 800; font-size: 0.72rem; font-family: 'Nunito', sans-serif; cursor: pointer; }
+.cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.62rem; font-weight: 800; color: var(--tm); text-transform: uppercase; margin-bottom: 4px; }
+.cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.cal-cell { aspect-ratio: 1; background: #fff; border-radius: 8px; box-shadow: var(--sh); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; position: relative; padding: 2px; }
+.cal-cell.other-month { opacity: 0.35; box-shadow: none; }
+.cal-cell.today { border: 2px solid var(--g); }
+.cal-cell.selected { background: var(--m); }
+.cal-cell.selected .cal-daynum { color: #fff; }
+.cal-daynum { font-size: 0.76rem; font-weight: 700; color: var(--tx); }
+.cal-badge { margin-top: 2px; min-width: 15px; height: 15px; padding: 0 3px; border-radius: 8px; font-size: 0.55rem; font-weight: 800; color: #fff; display: flex; align-items: center; justify-content: center; }
+.cal-badge.b-pending { background: var(--ok-pending); }
+.cal-badge.b-confirmed { background: var(--ok-confirmed); }
+.cal-badge.b-done { background: var(--ok-done); }
+.cal-badge.b-mixed { background: var(--g); color: var(--md); }
+.cal-event-card { background: var(--cr); border-radius: 10px; padding: 10px 12px; margin-bottom: 8px; border-left: 4px solid var(--m); cursor: pointer; }
+.cal-event-card.st-pending { border-left-color: var(--ok-pending); }
+.cal-event-card.st-confirmed { border-left-color: var(--ok-confirmed); }
+.cal-event-card.st-done { border-left-color: var(--ok-done); }
+.cev-top { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.cev-name { font-weight: 800; color: var(--m); font-size: 0.84rem; }
+.cev-no { font-size: 0.64rem; color: var(--tm); }
+.cev-meta { font-size: 0.7rem; color: var(--tm); margin-top: 3px; }
+.cev-amts { display: flex; gap: 12px; margin-top: 7px; font-size: 0.7rem; }
+.cev-amts b { display: block; font-size: 0.8rem; }
+
+/* ── CUSTOMER MANAGEMENT ──────────────────────────────────── */
+.cust-suggest { position: absolute; top: 100%; left: 0; right: 0; background: #fff; border-radius: 10px; box-shadow: var(--sh); z-index: 50; margin-top: 4px; max-height: 220px; overflow-y: auto; }
+.cust-suggest-item { padding: 9px 12px; border-bottom: 1px solid var(--crd); display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+.cust-suggest-item:last-child { border-bottom: none; }
+.cust-suggest-item:active { background: var(--crd); }
+.csi-name { font-size: 0.8rem; font-weight: 700; color: var(--tx); }
+.csi-mob { font-size: 0.72rem; color: var(--tm); }
+.arc-badge { font-size: 0.58rem; font-weight: 800; color: #fff; background: var(--tm); border-radius: 8px; padding: 1px 7px; text-transform: uppercase; margin-left: 6px; vertical-align: middle; }
+.ec.archived { opacity: 0.6; }
+#cust-archived-toggle.on { background: var(--m); color: #fff; }
+
 .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--md); color: #fff; padding: 9px 18px; border-radius: 18px; font-size: 0.82rem; font-weight: 600; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; max-width:88vw; text-overflow:ellipsis; overflow:hidden; }
 .toast.show { opacity: 1; }
 
@@ -370,13 +412,14 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   <div class="card">
     <div class="ch">👤 Customer Details</div>
     <div class="cb">
-      <div class="fr full"><div class="fg">
+      <div class="fr full"><div class="fg" style="position:relative">
         <label class="fl">Party Name</label>
-        <input class="fi" id="c-name" type="text" list="cust-names" placeholder="Customer name...">
+        <input class="fi" id="c-name" type="text" list="cust-names" placeholder="Customer name..." oninput="showCustSuggestions()" onfocus="showCustSuggestions()" autocomplete="off">
         <datalist id="cust-names"></datalist>
+        <div class="cust-suggest" id="cust-suggest" style="display:none"></div>
       </div></div>
       <div class="fr">
-        <div class="fg"><label class="fl">Mobile</label><input class="fi" id="c-mob" type="tel" placeholder="Mobile no." maxlength="13"></div>
+        <div class="fg" style="position:relative"><label class="fl">Mobile</label><input class="fi" id="c-mob" type="tel" placeholder="Mobile no." maxlength="13" oninput="showCustSuggestions()" autocomplete="off"></div>
         <div class="fg"><label class="fl">Address</label><input class="fi" id="c-addr" type="text" placeholder="Address"></div>
       </div>
     </div>
@@ -646,10 +689,64 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 <!-- CUSTOMERS -->
 <div class="pg" id="pg-customers">
   <div class="sb"><span class="si">🔍</span>
-    <input type="text" id="cust-srch" placeholder="Search customer name..." oninput="renderCustomers()">
+    <input type="text" id="cust-srch" placeholder="Search name or mobile..." oninput="renderCustomers()">
   </div>
-  <div id="cust-list"></div>
+  <div class="filter-chips" id="cust-sort-chips" style="margin-top:10px">
+    <button class="chip on" data-s="name" onclick="setCustSort('name')">Name</button>
+    <button class="chip" data-s="newest" onclick="setCustSort('newest')">Newest</button>
+    <button class="chip" data-s="bookings" onclick="setCustSort('bookings')">Most Bookings</button>
+    <button class="chip" data-s="business" onclick="setCustSort('business')">Highest Business</button>
+    <button class="chip" data-s="due" onclick="setCustSort('due')">Highest Due</button>
+    <button class="chip" id="cust-archived-toggle" onclick="toggleCustArchived()">🗄️ Archived</button>
+  </div>
+  <div id="cust-list" style="margin-top:10px"></div>
 </div>
+
+<!-- CUSTOMER DETAIL -->
+<div class="pg" id="pg-customer-detail">
+  <button class="btn bo" onclick="showPg('pg-customers')">← Back to Customers</button>
+  <div class="card" style="margin-top:12px">
+    <div class="ch">👤 Customer Information</div>
+    <div class="cb">
+      <div style="font-size:1.05rem;font-weight:800;color:var(--m)" id="cd-name">—</div>
+      <div style="font-size:0.8rem;color:var(--tm);margin-top:4px">📞 <span id="cd-mobile">—</span></div>
+      <div style="font-size:0.8rem;color:var(--tm);margin-top:2px">📍 <span id="cd-address">—</span></div>
+      <div style="display:flex;gap:8px;margin-top:10px" id="cd-quick-actions">
+        <a class="btn bo" style="flex:1;text-decoration:none;text-align:center" id="cd-call-btn" href="#">📞 Call</a>
+        <button class="btn bo" style="flex:1;background:#25D366;color:#fff;border:none" id="cd-wa-btn" onclick="cdOpenWhatsApp()">💬 WhatsApp</button>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn bo" style="flex:1" onclick="openCustEditForm()">✏️ Edit Details</button>
+        <button class="btn bo" style="flex:1" id="cd-archive-btn" onclick="archiveOrDeleteCustomer()">🗄️ Archive Customer</button>
+      </div>
+      <div class="pmt-form" id="cust-edit-form" style="display:none">
+        <div class="fr full"><div class="fg"><label class="fl">Name</label><input class="fi" id="ce-name" type="text"></div></div>
+        <div class="fr">
+          <div class="fg"><label class="fl">Mobile</label><input class="fi" id="ce-mobile" type="tel"></div>
+          <div class="fg"><label class="fl">Address</label><input class="fi" id="ce-address" type="text"></div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button class="btn bg" style="flex:1" onclick="saveCustEdit()">💾 Save</button>
+          <button class="btn bo" style="flex:1" onclick="closeCustEditForm()">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stat-row-4" style="margin-top:12px">
+    <div class="stat-card"><div class="stat-num" id="cd-bookings">0</div><div class="stat-lbl">Bookings</div></div>
+    <div class="stat-card"><div class="stat-num" id="cd-business">₹0</div><div class="stat-lbl">Business</div></div>
+    <div class="stat-card"><div class="stat-num" id="cd-paid">₹0</div><div class="stat-lbl">Paid</div></div>
+    <div class="stat-card"><div class="stat-num" id="cd-due">₹0</div><div class="stat-lbl">Due</div></div>
+  </div>
+
+  <div class="sec-title" style="margin-top:14px">Upcoming Bookings</div>
+  <div id="cd-upcoming"></div>
+
+  <div class="sec-title">Booking History</div>
+  <div id="cd-history"></div>
+</div>
+
 
 <!-- PAYMENTS -->
 <div class="pg" id="pg-payments">
@@ -677,7 +774,22 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 
 <!-- CALENDAR -->
 <div class="pg" id="pg-calendar">
-  <div id="cal-list"></div>
+  <div class="cal-nav">
+    <button class="cal-nav-btn" onclick="calPrevMonth()">◀</button>
+    <div class="cal-month-lbl" id="cal-month-lbl">Month Year</div>
+    <button class="cal-nav-btn" onclick="calNextMonth()">▶</button>
+  </div>
+  <button class="cal-today-btn" onclick="calGoToday()">📍 Today</button>
+
+  <div class="cal-dow">
+    <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+  </div>
+  <div class="cal-grid" id="cal-grid"></div>
+
+  <div class="card" id="cal-day-panel" style="margin-top:14px"></div>
+
+  <div class="sec-title" style="margin-top:18px">Upcoming Programs</div>
+  <div id="cal-upcoming-list"></div>
 </div>
 
 <!-- RECYCLE BIN -->
@@ -819,6 +931,7 @@ function showPg(id) {
   if (id === 'pg-set')  { renderSettingsForm(); }
   if (id === 'pg-tmpl-list') { renderTplList(); }
   if (id === 'pg-customers') { document.getElementById('nb-cust').classList.add('on'); renderCustomers(); }
+  if (id === 'pg-customer-detail') { document.getElementById('nb-cust').classList.add('on'); renderCustomerDetail(); }
   if (id === 'pg-payments')  { renderPayments(); }
   if (id === 'pg-calendar')  { document.getElementById('nb-cal').classList.add('on'); renderCalendar(); }
   if (id === 'pg-more') { document.getElementById('nb-more').classList.add('on'); renderTrash(); }
@@ -1161,6 +1274,7 @@ function saveEst() {
     if (idx !== -1) {
       list[idx] = Object.assign({}, list[idx], baseData, { updatedAt: now });
       localStorage.setItem('roop_ests', JSON.stringify(list));
+      findOrCreateCustomer(baseData.cName, baseData.cMob, baseData.cAddr);
       showEditBanner(list[idx]);
       showToast(mobWarn ? '✓ Update થયું (mobile નંબર ચેક કરો)' : ('✓ Estimate ' + (list[idx].estNo || '') + ' update થઈ!'));
       populateCustomerList();
@@ -1171,6 +1285,7 @@ function saveEst() {
   const est = Object.assign({ id: Date.now(), estNo: nextEstNo(), savedAt: now }, baseData);
   list.unshift(est);
   localStorage.setItem('roop_ests', JSON.stringify(list));
+  findOrCreateCustomer(baseData.cName, baseData.cMob, baseData.cAddr);
   currentEstId = est.id;
   showEditBanner(est);
   showToast(mobWarn ? ('✓ ' + est.estNo + ' સેવ થઈ (mobile નંબર ચેક કરો)') : ('✓ Estimate ' + est.estNo + ' સેવ થઈ!'));
@@ -1485,6 +1600,7 @@ function exportBackup() {
     estimates: JSON.parse(localStorage.getItem('roop_ests') || '[]'),
     trash: JSON.parse(localStorage.getItem('roop_trash') || '[]'),
     payments: JSON.parse(localStorage.getItem('roop_payments') || '[]'),
+    customers: JSON.parse(localStorage.getItem('roop_customers') || '[]'),
     settings: JSON.parse(localStorage.getItem('roop_settings') || 'null'),
     templates: JSON.parse(localStorage.getItem('roop_templates') || '[]'),
     counter: localStorage.getItem('roop_est_counter') || '0',
@@ -1512,9 +1628,10 @@ function importBackup(ev) {
       if (!confirm('હાલનો ડેટા replace થઈ જશે. Import કરવું છે?')) return;
       if (data.estimates) localStorage.setItem('roop_ests', JSON.stringify(data.estimates));
       if (data.trash) localStorage.setItem('roop_trash', JSON.stringify(data.trash));
-      // Older backups won't have `payments` — treat that as an empty payment
-      // store rather than erroring, and never touch what's already saved.
+      // Older backups may lack `payments`/`customers` — treat that as an
+      // empty store rather than erroring, and never touch what's already saved.
       if (Array.isArray(data.payments)) localStorage.setItem('roop_payments', JSON.stringify(data.payments));
+      if (Array.isArray(data.customers)) localStorage.setItem('roop_customers', JSON.stringify(data.customers));
       if (data.settings) localStorage.setItem('roop_settings', JSON.stringify(data.settings));
       if (data.templates) localStorage.setItem('roop_templates', JSON.stringify(data.templates));
       if (data.counter) localStorage.setItem('roop_est_counter', String(data.counter));
@@ -1528,11 +1645,12 @@ function importBackup(ev) {
 }
 
 function clearAllData() {
-  if (!confirm('બધો ડેટા (estimates + payments + settings + recycle bin) કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
+  if (!confirm('બધો ડેટા (estimates + payments + customers + settings + recycle bin) કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
   if (!confirm('ફરી ખાતરી કરો: ડેટા પાછો નહિ મળે. Continue?')) return;
   localStorage.removeItem('roop_ests');
   localStorage.removeItem('roop_trash');
   localStorage.removeItem('roop_payments');
+  localStorage.removeItem('roop_customers');
   localStorage.removeItem('roop_settings');
   localStorage.removeItem('roop_est_counter');
   showToast('Data cleared, reloading...');
@@ -2221,42 +2339,357 @@ function renderDashboard() {
   }
 }
 
-// ── CUSTOMERS ──────────────────────────────────────────────
-function renderCustomers() {
-  const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
-  const q = (document.getElementById('cust-srch').value || '').toLowerCase();
+// ── CUSTOMER MANAGEMENT ──────────────────────────────────────
+// roop_customers: [{ customerId, name, mobile, address, archived, createdAt, updatedAt }]
+// This is a profile/management layer only. Estimates keep their own
+// historical cName/cMob/cAddr untouched — nothing here ever writes to
+// roop_ests, roop_payments, roop_templates, or roop_trash.
 
-  const map = {};
-  list.forEach(e => {
-    const key = (e.cName || 'Unknown').trim();
-    if (!map[key]) map[key] = { name: key, mob: e.cMob || '', count: 0, net: 0, paid: 0, due: 0, lastDate: '' };
-    const amt = estAmounts(e);
-    const pay = paymentSummary(e.id);
-    map[key].count += 1;
-    map[key].net += amt.net;
-    map[key].paid += pay.paid;
-    map[key].due += pay.due;
-    if (!map[key].mob && e.cMob) map[key].mob = e.cMob;
-    if (e.pDate && e.pDate > map[key].lastDate) map[key].lastDate = e.pDate;
+function normalizeMobile(mob) {
+  let d = (mob || '').replace(/\D/g, '');
+  if (d.length > 10) d = d.slice(-10); // drop country code / leading 0s, keep last 10 digits
+  return d;
+}
+
+// Primary match = normalized mobile. Falls back to name+address only when
+// no usable mobile is present, so two different people with a similar name
+// are never silently merged.
+function customerMatchKey(name, mobile, address) {
+  const nm = normalizeMobile(mobile);
+  if (nm.length === 10) return 'm:' + nm;
+  return 'na:' + (name || '').trim().toLowerCase() + '|' + (address || '').trim().toLowerCase();
+}
+
+function getCustomers() {
+  return JSON.parse(localStorage.getItem('roop_customers') || '[]');
+}
+function saveCustomers(list) {
+  localStorage.setItem('roop_customers', JSON.stringify(list));
+}
+function getCustomerById(id) {
+  return getCustomers().find(c => c.customerId === id) || null;
+}
+
+// Find-or-create a customer profile. Idempotent — calling it again with the
+// same (matching) name/mobile/address never creates a duplicate.
+function findOrCreateCustomer(name, mobile, address) {
+  if (!(name || '').trim() && !(mobile || '').trim()) return null;
+  const customers = getCustomers();
+  const key = customerMatchKey(name, mobile, address);
+  const match = customers.find(c => customerMatchKey(c.name, c.mobile, c.address) === key);
+  if (match) return match.customerId;
+  const now = new Date().toISOString();
+  const rec = {
+    customerId: 'cust_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+    name: (name || '').trim() || 'Unknown',
+    mobile: (mobile || '').trim(),
+    address: (address || '').trim(),
+    archived: false,
+    createdAt: now,
+    updatedAt: now
+  };
+  customers.push(rec);
+  saveCustomers(customers);
+  return rec.customerId;
+}
+
+// One-time-per-estimate, fully idempotent migration: ensures every ACTIVE
+// (non-trashed) estimate's customer has a profile. Only ever appends to
+// roop_customers — never touches roop_ests, roop_payments, roop_templates,
+// or roop_trash. Safe to call on every app load and every Customers-page visit.
+function migrateEstimatesToCustomers() {
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  ests.forEach(e => {
+    if ((e.cName || '').trim() || (e.cMob || '').trim()) {
+      findOrCreateCustomer(e.cName, e.cMob, e.cAddr);
+    }
+  });
+}
+
+// Every roop_customers profile is included even with zero active bookings
+// (a customer must not disappear just because their one booking was
+// deleted/trashed) — profiles are the base list, active estimates
+// (Recycle Bin items live only in roop_trash, so they're never read here)
+// are matched onto each one and may total zero.
+function buildCustomerAggregates() {
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const today = todayStr();
+
+  const estGroups = {};
+  ests.forEach(e => {
+    if (!(e.cName || '').trim() && !(e.cMob || '').trim()) return;
+    const key = customerMatchKey(e.cName, e.cMob, e.cAddr);
+    if (!estGroups[key]) estGroups[key] = [];
+    estGroups[key].push(e);
   });
 
-  let customers = Object.values(map);
-  if (q) customers = customers.filter(c => c.name.toLowerCase().includes(q));
-  customers.sort((a, b) => a.name.localeCompare(b.name));
+  function aggFromProfile(profile, estimates) {
+    let net = 0, paid = 0, due = 0, lastDate = '', nextDate = '';
+    estimates.forEach(e => {
+      const amt = estAmounts(e);
+      const pay = paymentSummary(e.id);
+      net += amt.net; paid += pay.paid; due += pay.due;
+      if (e.pDate) {
+        if (e.pDate <= today && e.pDate > lastDate) lastDate = e.pDate;
+        if (e.pDate > today && (!nextDate || e.pDate < nextDate)) nextDate = e.pDate;
+      }
+    });
+    return {
+      customerId: profile.customerId, name: profile.name, mobile: profile.mobile,
+      address: profile.address, archived: !!profile.archived, createdAt: profile.createdAt,
+      bookings: estimates.length, net, paid, due, lastDate, nextDate, estimates
+    };
+  }
+
+  const customers = getCustomers();
+  const handledKeys = new Set();
+  const results = customers.map(profile => {
+    const key = customerMatchKey(profile.name, profile.mobile, profile.address);
+    handledKeys.add(key);
+    return aggFromProfile(profile, estGroups[key] || []);
+  });
+
+  // Self-heal: an estimate group with no matching profile yet (e.g. a
+  // restored old backup created before this phase) gets one created here.
+  Object.keys(estGroups).forEach(key => {
+    if (handledKeys.has(key)) return;
+    const latest = estGroups[key][0];
+    const id = findOrCreateCustomer(latest.cName, latest.cMob, latest.cAddr);
+    const profile = getCustomerById(id);
+    results.push(aggFromProfile(profile, estGroups[key]));
+  });
+
+  return results;
+}
+
+let custSort = 'name';
+let custShowArchived = false;
+
+function setCustSort(s) {
+  custSort = s;
+  document.querySelectorAll('#cust-sort-chips .chip[data-s]').forEach(c => c.classList.toggle('on', c.dataset.s === s));
+  renderCustomers();
+}
+
+function toggleCustArchived() {
+  custShowArchived = !custShowArchived;
+  document.getElementById('cust-archived-toggle').classList.toggle('on', custShowArchived);
+  renderCustomers();
+}
+
+function renderCustomers() {
+  migrateEstimatesToCustomers(); // cheap + idempotent; self-heals after restores/imports
+  let list = buildCustomerAggregates();
+
+  const q = (document.getElementById('cust-srch').value || '').toLowerCase().trim();
+  if (q) list = list.filter(c => c.name.toLowerCase().includes(q) || (c.mobile || '').toLowerCase().includes(q));
+
+  list = list.filter(c => custShowArchived ? true : !c.archived);
+
+  if (custSort === 'newest') list.sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+  else if (custSort === 'bookings') list.sort((a, b) => b.bookings - a.bookings);
+  else if (custSort === 'business') list.sort((a, b) => b.net - a.net);
+  else if (custSort === 'due') list.sort((a, b) => b.due - a.due);
+  else list.sort((a, b) => a.name.localeCompare(b.name));
 
   const cont = document.getElementById('cust-list');
-  if (!customers.length) {
+  if (!list.length) {
     cont.innerHTML = '<div class="emp"><div class="eic">👥</div><div>કોઈ Customer નથી</div></div>';
     return;
   }
-  cont.innerHTML = customers.map(c =>
-    '<div class="ec" onclick="goBookings(\'all\'); document.getElementById(\'srch\').value=\'' + esc(c.name).replace(/'/g, "\\'") + '\'; renderHist();">' +
-      '<div class="et"><span class="en">' + esc(c.name) + '</span><span class="ea">₹' + c.net.toLocaleString('en-IN') + '</span></div>' +
-      '<div class="em">' + (c.mob ? '📞 ' + esc(c.mob) : 'No mobile') + ' · ' + c.count + ' estimate(s)</div>' +
-      (c.due > 0 ? '<div class="em" style="color:#c0392b;font-weight:700;margin-top:3px">Due: ₹' + c.due.toLocaleString('en-IN') + '</div>' : '<div class="em" style="color:var(--ok-done);font-weight:700;margin-top:3px">Fully Paid</div>') +
+  cont.innerHTML = list.map(c =>
+    '<div class="ec' + (c.archived ? ' archived' : '') + '" onclick="showCustomerDetail(\'' + c.customerId + '\')">' +
+      '<div class="et"><span class="en">' + esc(c.name) + (c.archived ? ' <span class="arc-badge">Archived</span>' : '') + '</span><span class="ea">₹' + c.net.toLocaleString('en-IN') + '</span></div>' +
+      '<div class="em">' + (c.mobile ? '📞 ' + esc(c.mobile) : 'No mobile') + ' · ' + c.bookings + ' booking(s)</div>' +
+      '<div class="em">Paid ₹' + c.paid.toLocaleString('en-IN') + ' · ' + (c.due > 0 ? '<b style="color:#c0392b">Due ₹' + c.due.toLocaleString('en-IN') + '</b>' : '<b style="color:var(--ok-done)">Fully Paid</b>') + '</div>' +
+      '<div class="em" style="color:var(--tm)">Last: ' + (c.lastDate || '—') + ' · Next: ' + (c.nextDate || '—') + '</div>' +
     '</div>'
   ).join('');
 }
+
+// ── CUSTOMER DETAIL ───────────────────────────────────────────
+let currentCustomerId = null;
+
+function showCustomerDetail(customerId) {
+  currentCustomerId = customerId;
+  showPg('pg-customer-detail');
+}
+
+function buildCustBookingCardHtml(e) {
+  const amt = estAmounts(e);
+  const pay = paymentSummary(e.id);
+  const st = e.status || 'pending';
+  return '<div class="cal-event-card st-' + st + '" onclick="loadEst(' + e.id + ')">' +
+    '<div class="cev-top"><span class="cev-name">' + esc(e.pType || 'Program') + '</span><span class="cev-no">' + esc(e.estNo || '') + '</span></div>' +
+    '<div class="cev-meta">' + esc(e.pDate || 'No date') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + ' · <span class="st-sel st-' + st + '" style="padding:1px 6px">' + st + '</span></div>' +
+    '<div class="cev-amts">' +
+      '<div>Total<b>₹' + amt.net.toLocaleString('en-IN') + '</b></div>' +
+      '<div>Paid<b>₹' + pay.paid.toLocaleString('en-IN') + '</b></div>' +
+      '<div>Due<b>₹' + pay.due.toLocaleString('en-IN') + '</b></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderCustomerDetail() {
+  if (!currentCustomerId) return;
+  migrateEstimatesToCustomers();
+  const agg = buildCustomerAggregates().find(c => c.customerId === currentCustomerId);
+  const profile = getCustomerById(currentCustomerId);
+  if (!agg && !profile) { showToast('Customer મળ્યો નથી'); showPg('pg-customers'); return; }
+
+  const name = profile ? profile.name : agg.name;
+  const mobile = profile ? profile.mobile : agg.mobile;
+  const address = profile ? profile.address : agg.address;
+
+  document.getElementById('cd-name').textContent = name || 'Unknown';
+  document.getElementById('cd-mobile').textContent = mobile || '—';
+  document.getElementById('cd-address').textContent = address || '—';
+
+  const callBtn = document.getElementById('cd-call-btn');
+  const waBtn = document.getElementById('cd-wa-btn');
+  if (mobile) {
+    callBtn.style.display = '';
+    callBtn.href = 'tel:' + mobile;
+    waBtn.style.display = '';
+  } else {
+    callBtn.style.display = 'none';
+    waBtn.style.display = 'none';
+  }
+
+  document.getElementById('cd-bookings').textContent = agg ? agg.bookings : 0;
+  document.getElementById('cd-business').textContent = '₹' + (agg ? agg.net : 0).toLocaleString('en-IN');
+  document.getElementById('cd-paid').textContent = '₹' + (agg ? agg.paid : 0).toLocaleString('en-IN');
+  document.getElementById('cd-due').textContent = '₹' + (agg ? agg.due : 0).toLocaleString('en-IN');
+
+  const today = todayStr();
+  const estimates = agg ? agg.estimates.slice() : [];
+  const upcoming = estimates.filter(e => e.pDate && e.pDate > today).sort((a, b) => a.pDate < b.pDate ? -1 : 1);
+  const past = estimates.filter(e => !e.pDate || e.pDate <= today).sort((a, b) => (b.pDate || '') < (a.pDate || '') ? -1 : 1);
+
+  document.getElementById('cd-upcoming').innerHTML = upcoming.length
+    ? upcoming.map(buildCustBookingCardHtml).join('')
+    : '<div class="emp" style="padding:16px"><div class="eic">🗓️</div><div>No upcoming bookings</div></div>';
+  document.getElementById('cd-history').innerHTML = past.length
+    ? past.map(buildCustBookingCardHtml).join('')
+    : '<div class="emp" style="padding:16px"><div class="eic">📭</div><div>No past bookings</div></div>';
+
+  const archBtn = document.getElementById('cd-archive-btn');
+  archBtn.textContent = (profile && profile.archived) ? '♻️ Unarchive Customer' : '🗄️ Archive Customer';
+
+  closeCustEditForm();
+}
+
+function cdOpenWhatsApp() {
+  const profile = getCustomerById(currentCustomerId);
+  if (!profile || !profile.mobile) return;
+  let phone = profile.mobile.replace(/\D/g, '');
+  if (phone.length === 10) phone = '91' + phone;
+  window.open('https://wa.me/' + phone, '_blank');
+}
+
+function openCustEditForm() {
+  const profile = getCustomerById(currentCustomerId);
+  if (!profile) return;
+  document.getElementById('ce-name').value = profile.name || '';
+  document.getElementById('ce-mobile').value = profile.mobile || '';
+  document.getElementById('ce-address').value = profile.address || '';
+  document.getElementById('cust-edit-form').style.display = 'block';
+}
+function closeCustEditForm() {
+  const f = document.getElementById('cust-edit-form');
+  if (f) f.style.display = 'none';
+}
+function saveCustEdit() {
+  const name = document.getElementById('ce-name').value.trim();
+  if (!name) { showToast('Name જરૂરી છે'); return; }
+  const mobile = document.getElementById('ce-mobile').value.trim();
+  const address = document.getElementById('ce-address').value.trim();
+  const customers = getCustomers();
+  const idx = customers.findIndex(c => c.customerId === currentCustomerId);
+  if (idx === -1) return;
+  // Only the customer profile changes — every existing estimate keeps its
+  // own historical cName/cMob/cAddr exactly as saved, untouched.
+  customers[idx] = Object.assign({}, customers[idx], { name, mobile, address, updatedAt: new Date().toISOString() });
+  saveCustomers(customers);
+  showToast('✓ Customer updated');
+  renderCustomerDetail();
+}
+
+function archiveOrDeleteCustomer() {
+  const profile = getCustomerById(currentCustomerId);
+  if (!profile) return;
+  const agg = buildCustomerAggregates().find(c => c.customerId === currentCustomerId);
+  const bookingCount = agg ? agg.bookings : 0;
+  const customers = getCustomers();
+  const idx = customers.findIndex(c => c.customerId === currentCustomerId);
+  if (idx === -1) return;
+
+  if (profile.archived) {
+    customers[idx].archived = false;
+    customers[idx].updatedAt = new Date().toISOString();
+    saveCustomers(customers);
+    showToast('✓ Customer unarchived');
+    renderCustomerDetail();
+    return;
+  }
+
+  if (bookingCount > 0) {
+    if (!confirm('આ customer ને ' + bookingCount + ' booking(s) છે. Estimates delete નહિ થાય — ફક્ત customer profile archive થશે. Continue?')) return;
+    customers[idx].archived = true;
+    customers[idx].updatedAt = new Date().toISOString();
+    saveCustomers(customers);
+    showToast('✓ Customer archived');
+    renderCustomerDetail();
+  } else {
+    if (!confirm('આ customer ને કોઈ active booking નથી. Profile કાયમ માટે delete કરવી છે?')) return;
+    saveCustomers(customers.filter(c => c.customerId !== currentCustomerId));
+    showToast('Customer profile deleted');
+    showPg('pg-customers');
+  }
+}
+
+// ── NEW ESTIMATE: CUSTOMER SUGGESTIONS ────────────────────────
+function showCustSuggestions() {
+  const box = document.getElementById('cust-suggest');
+  if (!box) return;
+  const nameVal = document.getElementById('c-name').value.trim().toLowerCase();
+  const mobVal = normalizeMobile(document.getElementById('c-mob').value);
+  if (nameVal.length < 2 && mobVal.length < 3) { box.style.display = 'none'; box.innerHTML = ''; return; }
+
+  const matches = getCustomers().filter(c => {
+    if (c.archived) return false;
+    const n = (c.name || '').toLowerCase();
+    const m = normalizeMobile(c.mobile);
+    return (nameVal.length >= 2 && n.includes(nameVal)) || (mobVal.length >= 3 && m.includes(mobVal));
+  }).slice(0, 6);
+
+  if (!matches.length) { box.style.display = 'none'; box.innerHTML = ''; return; }
+  box.innerHTML = matches.map(c =>
+    '<div class="cust-suggest-item" onclick="pickCustSuggestion(\'' + c.customerId + '\')">' +
+      '<span class="csi-name">' + esc(c.name) + '</span>' +
+      (c.mobile ? '<span class="csi-mob">' + esc(c.mobile) + '</span>' : '') +
+    '</div>'
+  ).join('');
+  box.style.display = 'block';
+}
+
+function pickCustSuggestion(customerId) {
+  const c = getCustomerById(customerId);
+  if (!c) return;
+  document.getElementById('c-name').value = c.name || '';
+  document.getElementById('c-mob').value = c.mobile || '';
+  document.getElementById('c-addr').value = c.address || '';
+  document.getElementById('cust-suggest').style.display = 'none';
+  showToast('✓ ' + c.name + ' details ભર્યા');
+}
+
+document.addEventListener('click', function (ev) {
+  const box = document.getElementById('cust-suggest');
+  if (!box) return;
+  if (!ev.target.closest('#cust-suggest') && ev.target.id !== 'c-name' && ev.target.id !== 'c-mob') {
+    box.style.display = 'none';
+  }
+});
 
 // ── PAYMENTS (ledger view, backed by roop_payments) ─────────
 function buildPayItemHtml(e) {
@@ -2361,37 +2794,178 @@ function renderPayments() {
 }
 
 // ── CALENDAR (agenda view) ───────────────────────────────────
-function renderCalendar() {
+// ── CALENDAR (month grid, backed entirely by roop_ests) ──────
+let calViewYear = null;
+let calViewMonth = null; // 0-indexed
+let calSelectedDate = null; // 'YYYY-MM-DD'
+
+function isValidPDate(dstr) {
+  if (!dstr || !/^\d{4}-\d{2}-\d{2}$/.test(dstr)) return false;
+  const [y, m, d] = dstr.split('-').map(Number);
+  const dt = new Date(y, m - 1, d);
+  // catches both unparseable strings and calendar rollovers (e.g. 2026-02-30 -> Mar 2)
+  return dt.getFullYear() === y && dt.getMonth() === m - 1 && dt.getDate() === d;
+}
+
+// Builds { 'YYYY-MM-DD': [estimates...] } in a single pass over active
+// (non-trashed) estimates. Trashed items live only in roop_trash and are
+// never read here, so they never appear on the calendar.
+function buildCalEventMap() {
   const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
-  const today = todayStr();
-  const withDates = list.filter(e => e.pDate).sort((a, b) => a.pDate < b.pDate ? -1 : (a.pDate > b.pDate ? 1 : 0));
-
-  const cont = document.getElementById('cal-list');
-  if (!withDates.length) {
-    cont.innerHTML = '<div class="emp"><div class="eic">📅</div><div>કોઈ program date set નથી</div></div>';
-    return;
-  }
-
-  const groups = [];
   const map = {};
-  withDates.forEach(e => {
-    if (!map[e.pDate]) { map[e.pDate] = []; groups.push(e.pDate); }
+  list.forEach(e => {
+    if (!isValidPDate(e.pDate)) return; // invalid/missing dates never placed on calendar
+    if (!map[e.pDate]) map[e.pDate] = [];
     map[e.pDate].push(e);
   });
+  return map;
+}
 
-  cont.innerHTML = groups.map(dstr => {
-    const dt = fmtDateShort(dstr);
-    const isToday = dstr === today;
-    const rows = map[dstr].map(e => {
-      const a = estAmounts(e);
-      return '<div class="up-item" style="margin-bottom:6px" onclick="loadEst(' + e.id + ')">' +
-        '<div class="up-info"><div class="up-name">' + esc(e.cName) + '</div>' +
-        '<div class="up-meta">' + esc(e.pType || 'Program') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + ' · <span class="st-sel st-' + (e.status || 'pending') + '" style="padding:1px 6px">' + (e.status || 'pending') + '</span></div></div>' +
-        '<div class="up-amt"><div class="ua-net">₹' + a.net.toLocaleString('en-IN') + '</div></div>' +
-      '</div>';
-    }).join('');
-    return '<div class="sec-title" style="margin-top:14px">' + (isToday ? '🔴 Today · ' : '') + dt.d + ' ' + dt.m + ' · ' + esc(dstr) + '</div>' + rows;
+function calDominantStatusClass(events) {
+  const statuses = new Set(events.map(e => e.status || 'pending'));
+  if (statuses.size > 1) return 'mixed';
+  return events[0] ? (events[0].status || 'pending') : 'pending';
+}
+
+function calPrevMonth() {
+  calViewMonth--;
+  if (calViewMonth < 0) { calViewMonth = 11; calViewYear--; }
+  renderCalendar();
+}
+
+function calNextMonth() {
+  calViewMonth++;
+  if (calViewMonth > 11) { calViewMonth = 0; calViewYear++; }
+  renderCalendar();
+}
+
+function calGoToday() {
+  const now = new Date();
+  calViewYear = now.getFullYear();
+  calViewMonth = now.getMonth();
+  calSelectedDate = todayStr();
+  renderCalendar();
+}
+
+function calSelectDate(dstr) {
+  calSelectedDate = (calSelectedDate === dstr) ? null : dstr;
+  renderCalendar();
+}
+
+function buildCalEventCardHtml(e) {
+  const amt = estAmounts(e);
+  const pay = paymentSummary(e.id);
+  const st = e.status || 'pending';
+  return '<div class="cal-event-card st-' + st + '" onclick="loadEst(' + e.id + ')">' +
+    '<div class="cev-top"><span class="cev-name">' + esc(e.cName || 'Unknown') + '</span><span class="cev-no">' + esc(e.estNo || '') + '</span></div>' +
+    '<div class="cev-meta">' + esc(e.pType || 'Program') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + (e.pTime ? ' · ' + esc(e.pTime) : '') +
+      ' · <span class="st-sel st-' + st + '" style="padding:1px 6px">' + st + '</span></div>' +
+    '<div class="cev-amts">' +
+      '<div>Total<b>₹' + amt.net.toLocaleString('en-IN') + '</b></div>' +
+      '<div>Paid<b>₹' + pay.paid.toLocaleString('en-IN') + '</b></div>' +
+      '<div>Due<b>₹' + pay.due.toLocaleString('en-IN') + '</b></div>' +
+    '</div>' +
+  '</div>';
+}
+
+function renderCalDayPanel(dateStr, eventMap) {
+  const panel = document.getElementById('cal-day-panel');
+  if (!dateStr) { panel.innerHTML = ''; return; }
+  const events = eventMap[dateStr] || [];
+  const dt = fmtDateShort(dateStr);
+  const heading = dt.d + ' ' + dt.m + ' ' + dateStr.slice(0, 4) + (events.length ? (' · ' + events.length + ' Program' + (events.length > 1 ? 's' : '')) : '');
+  if (!events.length) {
+    panel.innerHTML = '<div class="ch">' + esc(heading) + '</div><div class="cb"><div class="emp"><div class="eic">📭</div><div>No programs scheduled ' + (dateStr === todayStr() ? 'today' : 'on this date') + '.</div></div></div>';
+    return;
+  }
+  const sorted = events.slice().sort((a, b) => (a.pTime || '').localeCompare(b.pTime || ''));
+  panel.innerHTML = '<div class="ch">' + esc(heading) + '</div><div class="cb">' + sorted.map(buildCalEventCardHtml).join('') + '</div>';
+}
+
+function renderCalUpcoming(eventMap) {
+  const today = todayStr();
+  const upcoming = [];
+  Object.keys(eventMap).forEach(dstr => {
+    if (dstr >= today) eventMap[dstr].forEach(e => upcoming.push(e));
+  });
+  upcoming.sort((a, b) => (a.pDate + (a.pTime || '')) < (b.pDate + (b.pTime || '')) ? -1 : 1);
+  const next10 = upcoming.slice(0, 10);
+
+  const cont = document.getElementById('cal-upcoming-list');
+  if (!next10.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">🗓️</div><div>કોઈ upcoming program નથી</div></div>';
+    return;
+  }
+  cont.innerHTML = next10.map(e => {
+    const dt = fmtDateShort(e.pDate);
+    const st = e.status || 'pending';
+    return '<div class="up-item" onclick="loadEst(' + e.id + ')">' +
+      '<div class="up-date"><div class="ud-day">' + dt.d + '</div><div class="ud-mon">' + dt.m + '</div></div>' +
+      '<div class="up-info"><div class="up-name">' + esc(e.cName) + '</div>' +
+      '<div class="up-meta">' + esc(e.pType || 'Program') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + ' · <span class="st-sel st-' + st + '" style="padding:1px 6px">' + st + '</span></div></div>' +
+    '</div>';
   }).join('');
+}
+
+function renderCalendar() {
+  if (calViewYear === null) {
+    const now = new Date();
+    calViewYear = now.getFullYear();
+    calViewMonth = now.getMonth();
+  }
+
+  const eventMap = buildCalEventMap(); // single pass; O(1) lookup per grid cell after this
+  const today = todayStr();
+
+  document.getElementById('cal-month-lbl').textContent = MON[calViewMonth] + ' ' + calViewYear;
+
+  const firstOfMonth = new Date(calViewYear, calViewMonth, 1);
+  const startWeekday = firstOfMonth.getDay(); // 0=Sun
+  const daysInMonth = new Date(calViewYear, calViewMonth + 1, 0).getDate();
+  const daysInPrevMonth = new Date(calViewYear, calViewMonth, 0).getDate();
+
+  const cells = [];
+  // leading days from previous month
+  for (let i = startWeekday - 1; i >= 0; i--) {
+    const d = daysInPrevMonth - i;
+    const m = calViewMonth === 0 ? 12 : calViewMonth;
+    const y = calViewMonth === 0 ? calViewYear - 1 : calViewYear;
+    cells.push({ day: d, month: m, year: y, otherMonth: true });
+  }
+  // current month days
+  for (let d = 1; d <= daysInMonth; d++) {
+    cells.push({ day: d, month: calViewMonth + 1, year: calViewYear, otherMonth: false });
+  }
+  // trailing days to complete the last week
+  let nextDay = 1;
+  while (cells.length % 7 !== 0) {
+    const m = calViewMonth === 11 ? 1 : calViewMonth + 2;
+    const y = calViewMonth === 11 ? calViewYear + 1 : calViewYear;
+    cells.push({ day: nextDay++, month: m, year: y, otherMonth: true });
+  }
+
+  const grid = document.getElementById('cal-grid');
+  grid.innerHTML = cells.map(c => {
+    const dstr = c.year + '-' + String(c.month).padStart(2, '0') + '-' + String(c.day).padStart(2, '0');
+    const events = eventMap[dstr] || [];
+    const isToday = dstr === today;
+    const isSelected = dstr === calSelectedDate;
+    let cls = 'cal-cell';
+    if (c.otherMonth) cls += ' other-month';
+    if (isToday) cls += ' today';
+    if (isSelected) cls += ' selected';
+    let badge = '';
+    if (events.length) {
+      const domStatus = calDominantStatusClass(events);
+      badge = '<span class="cal-badge b-' + domStatus + '">' + events.length + '</span>';
+    }
+    return '<div class="' + cls + '" onclick="calSelectDate(\'' + dstr + '\')">' +
+      '<div class="cal-daynum">' + c.day + '</div>' + badge +
+    '</div>';
+  }).join('');
+
+  renderCalDayPanel(calSelectedDate, eventMap);
+  renderCalUpcoming(eventMap);
 }
 
 // ── TOAST ──────────────────────────────────────────────────
@@ -2410,6 +2984,7 @@ populateCustomerList();
 populateTplQuickSwitch();
 purgeOldTrash();
 migrateAdvanceToPayments();
+migrateEstimatesToCustomers();
 renderDashboard();
 (function initTrashBadge() {
   const trash = JSON.parse(localStorage.getItem('roop_trash') || '[]');
