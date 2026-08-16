@@ -312,6 +312,38 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 .ec.archived { opacity: 0.6; }
 #cust-archived-toggle.on { background: var(--m); color: #fff; }
 
+/* ── INVENTORY ─────────────────────────────────────────────── */
+.inv-item { background: #fff; border-radius: var(--r); box-shadow: var(--sh); margin-bottom: 10px; padding: 12px; border-left: 4px solid var(--g); cursor: pointer; }
+.inv-item.inactive { opacity: 0.55; border-left-color: var(--tm); }
+.inv-item.short { border-left-color: #c0392b; }
+.inv-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.inv-name { font-weight: 800; color: var(--m); font-size: 0.85rem; }
+.inv-cat { font-size: 0.65rem; color: var(--tm); background: var(--crd); border-radius: 8px; padding: 1px 8px; }
+.inv-stats { display: flex; gap: 12px; margin-top: 7px; font-size: 0.7rem; }
+.inv-stats b { display: block; font-size: 0.82rem; }
+.inv-status-ok { color: var(--ok-done); font-weight: 800; }
+.inv-status-short { color: #c0392b; font-weight: 800; }
+.inv-status-inactive { color: var(--tm); font-weight: 800; }
+.shortage-row { background: #fdecea; border-radius: 10px; padding: 9px 12px; margin-bottom: 7px; border-left: 4px solid #c0392b; cursor: pointer; }
+.shortage-row .sr-top { display: flex; justify-content: space-between; font-size: 0.78rem; font-weight: 800; color: #c0392b; }
+.shortage-row .sr-meta { font-size: 0.7rem; color: var(--tm); margin-top: 3px; }
+.binv-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 0; border-bottom: 1px solid var(--crd); }
+.binv-row:last-child { border-bottom: none; }
+.binv-name { font-size: 0.78rem; font-weight: 700; color: var(--tx); }
+.binv-meta { font-size: 0.66rem; color: var(--tm); margin-top: 2px; }
+.cal-shortage-tag { display: inline-block; font-size: 0.6rem; font-weight: 800; color: #c0392b; background: #fdecea; border-radius: 8px; padding: 1px 7px; margin-top: 4px; }
+
+/* ── REPORTS ───────────────────────────────────────────────── */
+.rep-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--crd); font-size: 0.78rem; }
+.rep-row:last-child { border-bottom: none; }
+.rep-row .rr-lbl { color: var(--tx); font-weight: 700; }
+.rep-row .rr-val { color: var(--m); font-weight: 800; }
+.rep-bar-track { background: var(--crd); border-radius: 6px; height: 6px; margin-top: 4px; overflow: hidden; }
+.rep-bar-fill { background: linear-gradient(90deg, var(--g), var(--gl)); height: 100%; border-radius: 6px; }
+@media print {
+  #pg-reports .filter-chips, #pg-reports .fr, #rep-range-err, #rep-actions { display: none !important; }
+}
+
 .toast { position: fixed; bottom: 96px; left: 50%; transform: translateX(-50%); background: var(--md); color: #fff; padding: 9px 18px; border-radius: 18px; font-size: 0.82rem; font-weight: 600; z-index: 999; opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap; max-width:88vw; text-overflow:ellipsis; overflow:hidden; }
 .toast.show { opacity: 1; }
 
@@ -346,6 +378,11 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
     <button class="qa-btn" onclick="goBookings('all')"><span class="qa-ic">📋</span><span class="qa-lbl">Bookings</span></button>
     <button class="qa-btn" onclick="showPg('pg-customers')"><span class="qa-ic">👥</span><span class="qa-lbl">Customers</span></button>
     <button class="qa-btn" onclick="showPg('pg-payments')"><span class="qa-ic">💰</span><span class="qa-lbl">Payments</span></button>
+  </div>
+
+  <div id="dash-inv-alert" style="display:none;align-items:center;justify-content:space-between;background:#fdecea;border-radius:10px;padding:10px 14px;margin-top:10px;cursor:pointer" onclick="showPg('pg-inventory')">
+    <span style="font-size:0.78rem;font-weight:800;color:#c0392b">⚠️ Stock Shortages</span>
+    <span style="font-size:0.7rem;color:#c0392b">View →</span>
   </div>
 
   <div class="sec-title">Overview</div>
@@ -549,6 +586,12 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- BOOKING INVENTORY STATUS (informational — never affects pricing) -->
+  <div class="card" id="binv-section" style="display:none">
+    <div class="ch">📦 Inventory Status</div>
+    <div class="cb" id="binv-list"></div>
   </div>
 
   <div class="brow">
@@ -803,6 +846,109 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   <div id="trash-list"></div>
 </div>
 
+<!-- INVENTORY LIST -->
+<div class="pg" id="pg-inventory">
+  <div class="card" id="inv-shortage-card" style="display:none;margin-bottom:12px">
+    <div class="ch">⚠️ Stock Shortages</div>
+    <div class="cb" id="inv-shortage-list"></div>
+  </div>
+
+  <button class="add-item-btn" onclick="openInvAddForm()">➕ Add Inventory Item</button>
+  <div class="pmt-form" id="inv-add-form" style="display:none">
+    <div class="fr full"><div class="fg"><label class="fl">Item Name</label><input class="fi" id="inv-name" type="text" list="inv-name-list" placeholder="e.g. ખુરશી / Chair"><datalist id="inv-name-list"></datalist></div></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Category</label>
+        <select class="fi" id="inv-category">
+          <option>Chairs</option><option>Tables</option><option>Sofas</option><option>Stage</option>
+          <option>Lighting</option><option>Backdrop</option><option>Mandap</option><option>Entrance</option>
+          <option>Flowers</option><option>Fabric</option><option>Props</option><option selected>Other</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Unit</label><input class="fi" id="inv-unit" type="text" placeholder="pcs / set / sqft"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Total Stock</label><input class="fi" id="inv-total" type="number" min="0" placeholder="0"></div>
+      <div class="fg"><label class="fl">Damaged Stock</label><input class="fi" id="inv-damaged" type="number" min="0" placeholder="0"></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Under Repair</label><input class="fi" id="inv-repair" type="number" min="0" placeholder="0"></div>
+      <div class="fg"><label class="fl">Notes</label><input class="fi" id="inv-notes" type="text" placeholder="optional"></div>
+    </div>
+    <div id="inv-form-warn" style="display:none;color:#c0392b;font-size:0.72rem;margin-top:2px"></div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <input type="hidden" id="inv-edit-id">
+      <button class="btn bg" style="flex:1" onclick="saveInventoryItem()">💾 Save Item</button>
+      <button class="btn bo" style="flex:1" onclick="closeInvAddForm()">Cancel</button>
+    </div>
+  </div>
+
+  <div class="sb" style="margin-top:12px"><span class="si">🔍</span>
+    <input type="text" id="inv-srch" placeholder="Search item or category..." oninput="renderInventory()">
+  </div>
+  <div class="filter-chips" id="inv-active-toggle-row" style="margin-top:10px">
+    <button class="chip on" data-a="active" onclick="setInvActiveFilter('active')">Active</button>
+    <button class="chip" data-a="all" onclick="setInvActiveFilter('all')">Show Inactive Too</button>
+  </div>
+  <div id="inv-list" style="margin-top:10px"></div>
+</div>
+
+<!-- INVENTORY DETAIL -->
+<div class="pg" id="pg-inventory-detail">
+  <button class="btn bo" onclick="showPg('pg-inventory')">← Back to Inventory</button>
+  <div class="card" style="margin-top:12px">
+    <div class="ch" id="invd-name">—</div>
+    <div class="cb">
+      <div style="font-size:0.78rem;color:var(--tm)" id="invd-category">—</div>
+      <div class="stat-row-4" style="margin-top:10px">
+        <div class="stat-card"><div class="stat-num" id="invd-total">0</div><div class="stat-lbl">Total Stock</div></div>
+        <div class="stat-card"><div class="stat-num" id="invd-reserved">0</div><div class="stat-lbl">Reserved</div></div>
+        <div class="stat-card"><div class="stat-num" id="invd-available">0</div><div class="stat-lbl">Available</div></div>
+        <div class="stat-card"><div class="stat-num" id="invd-status">—</div><div class="stat-lbl">Status</div></div>
+      </div>
+      <div class="stat-row" style="margin-top:8px">
+        <div class="stat-card"><div class="stat-num" id="invd-damaged">0</div><div class="stat-lbl">Damaged</div></div>
+        <div class="stat-card"><div class="stat-num" id="invd-repair">0</div><div class="stat-lbl">Under Repair</div></div>
+        <div class="stat-card"><div class="stat-num" id="invd-unit">—</div><div class="stat-lbl">Unit</div></div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn bo" style="flex:1" onclick="openInvEditForm()">✏️ Edit</button>
+        <button class="btn bo" style="flex:1" id="invd-toggle-btn" onclick="toggleInvActive()">⏸️ Deactivate</button>
+      </div>
+      <div class="pmt-form" id="invd-edit-form" style="display:none"></div>
+    </div>
+  </div>
+
+  <div class="sec-title" style="margin-top:14px">Upcoming Bookings Requiring This Item</div>
+  <div id="invd-bookings"></div>
+</div>
+
+<!-- REPORTS -->
+<div class="pg" id="pg-reports">
+  <div class="filter-chips" id="rep-filters">
+    <button class="chip on" data-f="today" onclick="setReportFilter('today')">Today</button>
+    <button class="chip" data-f="week" onclick="setReportFilter('week')">This Week</button>
+    <button class="chip" data-f="month" onclick="setReportFilter('month')">This Month</button>
+    <button class="chip" data-f="year" onclick="setReportFilter('year')">This Year</button>
+    <button class="chip" data-f="fy" onclick="setReportFilter('fy')">Financial Year</button>
+    <button class="chip" data-f="custom" onclick="setReportFilter('custom')">Custom Range</button>
+  </div>
+  <div class="fr" id="rep-custom-range" style="display:none">
+    <div class="fg"><label class="fl">From</label><input class="fi" id="rep-from" type="date" onchange="applyReportCustomRange()"></div>
+    <div class="fg"><label class="fl">To</label><input class="fi" id="rep-to" type="date" onchange="applyReportCustomRange()"></div>
+  </div>
+  <div id="rep-range-err" style="display:none;color:#c0392b;font-size:0.72rem;margin-bottom:6px"></div>
+  <div id="rep-range-label" style="font-size:0.72rem;color:var(--tm);margin-bottom:10px"></div>
+
+  <div class="dcard-grid" id="rep-cards"></div>
+
+  <div style="display:flex;gap:8px;margin:12px 0" id="rep-actions">
+    <button class="btn bo" style="flex:1" onclick="exportReportCSV()">⬇️ Export CSV</button>
+    <button class="btn bo" style="flex:1" onclick="printReport()">🖨️ Print / PDF</button>
+  </div>
+
+  <div id="rep-body"></div>
+</div>
+
 <!-- MORE -->
 <div class="pg" id="pg-more">
   <div class="card">
@@ -811,6 +957,8 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
       <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-set')">⚙️ Settings &amp; Business Info</button>
       <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-tmpl-list')">📑 My Templates</button>
       <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-hist')">📋 All Bookings / History</button>
+      <button class="btn bo" style="justify-content:flex-start;position:relative" onclick="showPg('pg-inventory')">📦 Inventory <span id="inv-shortage-badge" style="margin-left:auto;background:#c0392b;color:#fff;border-radius:10px;padding:1px 8px;font-size:0.65rem"></span></button>
+      <button class="btn bo" style="justify-content:flex-start" onclick="showPg('pg-reports')">📊 Reports</button>
       <button class="btn bo" style="justify-content:flex-start;position:relative" onclick="showPg('pg-trash')">🗑️ Recycle Bin <span id="trash-count-badge" style="margin-left:auto;background:#c0392b;color:#fff;border-radius:10px;padding:1px 8px;font-size:0.65rem"></span></button>
     </div>
   </div>
@@ -926,7 +1074,7 @@ function showPg(id) {
   document.getElementById(id).classList.add('on');
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
   if (id === 'pg-dashboard') { document.getElementById('nb-home').classList.add('on'); renderDashboard(); }
-  if (id === 'pg-new')  { populateCustomerList(); populateTplQuickSwitch(); calcTot(); renderPaymentSection(); }
+  if (id === 'pg-new')  { populateCustomerList(); populateTplQuickSwitch(); calcTot(); renderPaymentSection(); renderBookingInventoryStatus(); }
   if (id === 'pg-hist') { document.getElementById('nb-hist').classList.add('on'); renderHist(); }
   if (id === 'pg-set')  { renderSettingsForm(); }
   if (id === 'pg-tmpl-list') { renderTplList(); }
@@ -934,8 +1082,11 @@ function showPg(id) {
   if (id === 'pg-customer-detail') { document.getElementById('nb-cust').classList.add('on'); renderCustomerDetail(); }
   if (id === 'pg-payments')  { renderPayments(); }
   if (id === 'pg-calendar')  { document.getElementById('nb-cal').classList.add('on'); renderCalendar(); }
-  if (id === 'pg-more') { document.getElementById('nb-more').classList.add('on'); renderTrash(); }
+  if (id === 'pg-more') { document.getElementById('nb-more').classList.add('on'); renderTrash(); refreshInvShortageBadge(); }
   if (id === 'pg-trash') { renderTrash(); }
+  if (id === 'pg-inventory') { renderInventory(); }
+  if (id === 'pg-inventory-detail') { renderInventoryDetail(); }
+  if (id === 'pg-reports') { renderReports(); }
   if (id !== 'pg-new') { const mini = document.getElementById('mini-total'); if (mini) mini.style.display = 'none'; }
   window.scrollTo(0, 0);
 }
@@ -1066,6 +1217,7 @@ function renderItems() {
   updateTplBanner();
   calcTot();
   filterItems();
+  renderBookingInventoryStatus();
 }
 
 function updateTplBanner() {
@@ -1321,6 +1473,7 @@ function clearForm() {
   document.getElementById('edit-banner').style.display = 'none';
   document.getElementById('add-item-form').classList.remove('open');
   renderPaymentSection();
+  renderBookingInventoryStatus();
   const searchEl = document.getElementById('item-search');
   if (searchEl) searchEl.value = '';
   renderItems();
@@ -1601,6 +1754,7 @@ function exportBackup() {
     trash: JSON.parse(localStorage.getItem('roop_trash') || '[]'),
     payments: JSON.parse(localStorage.getItem('roop_payments') || '[]'),
     customers: JSON.parse(localStorage.getItem('roop_customers') || '[]'),
+    inventory: JSON.parse(localStorage.getItem('roop_inventory') || '[]'),
     settings: JSON.parse(localStorage.getItem('roop_settings') || 'null'),
     templates: JSON.parse(localStorage.getItem('roop_templates') || '[]'),
     counter: localStorage.getItem('roop_est_counter') || '0',
@@ -1628,10 +1782,12 @@ function importBackup(ev) {
       if (!confirm('હાલનો ડેટા replace થઈ જશે. Import કરવું છે?')) return;
       if (data.estimates) localStorage.setItem('roop_ests', JSON.stringify(data.estimates));
       if (data.trash) localStorage.setItem('roop_trash', JSON.stringify(data.trash));
-      // Older backups may lack `payments`/`customers` — treat that as an
-      // empty store rather than erroring, and never touch what's already saved.
+      // Older backups may lack `payments`/`customers`/`inventory` — treat
+      // that as an empty store rather than erroring, and never touch what's
+      // already saved.
       if (Array.isArray(data.payments)) localStorage.setItem('roop_payments', JSON.stringify(data.payments));
       if (Array.isArray(data.customers)) localStorage.setItem('roop_customers', JSON.stringify(data.customers));
+      if (Array.isArray(data.inventory)) localStorage.setItem('roop_inventory', JSON.stringify(data.inventory));
       if (data.settings) localStorage.setItem('roop_settings', JSON.stringify(data.settings));
       if (data.templates) localStorage.setItem('roop_templates', JSON.stringify(data.templates));
       if (data.counter) localStorage.setItem('roop_est_counter', String(data.counter));
@@ -1645,12 +1801,13 @@ function importBackup(ev) {
 }
 
 function clearAllData() {
-  if (!confirm('બધો ડેટા (estimates + payments + customers + settings + recycle bin) કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
+  if (!confirm('બધો ડેટા (estimates + payments + customers + inventory + settings + recycle bin) કાયમ માટે ડિલીટ થશે. ખાતરી છે?')) return;
   if (!confirm('ફરી ખાતરી કરો: ડેટા પાછો નહિ મળે. Continue?')) return;
   localStorage.removeItem('roop_ests');
   localStorage.removeItem('roop_trash');
   localStorage.removeItem('roop_payments');
   localStorage.removeItem('roop_customers');
+  localStorage.removeItem('roop_inventory');
   localStorage.removeItem('roop_settings');
   localStorage.removeItem('roop_est_counter');
   showToast('Data cleared, reloading...');
@@ -2046,9 +2203,786 @@ function renderPaymentSection() {
   }
 }
 
+// ── INVENTORY MANAGEMENT ─────────────────────────────────────
+// roop_inventory: [{ itemId, name, category, unit, totalStock, damagedStock,
+//                     repairStock, active, notes, createdAt, updatedAt }]
+// This is a separate configuration store — it never touches roop_ests,
+// roop_customers, roop_payments, roop_templates, or roop_trash, and it
+// never changes billing rates or amount calculations.
+
+function getInventoryItems() {
+  return JSON.parse(localStorage.getItem('roop_inventory') || '[]');
+}
+function saveInventoryItems(list) {
+  localStorage.setItem('roop_inventory', JSON.stringify(list));
+}
+function getInventoryItemById(id) {
+  return getInventoryItems().find(i => i.itemId === id) || null;
+}
+function normalizeItemName(n) {
+  return (n || '').trim().toLowerCase();
+}
+function findInventoryItemByName(name) {
+  const key = normalizeItemName(name);
+  if (!key) return null;
+  return getInventoryItems().find(i => normalizeItemName(i.name) === key) || null;
+}
+// Only an ACTIVE, configured item is used for shortage/reservation math —
+// an inactive item is treated the same as "not configured" so deactivating
+// safely pauses tracking without deleting its saved configuration.
+function getTrackedInventoryItem(name) {
+  const it = findInventoryItemByName(name);
+  return (it && it.active !== false) ? it : null;
+}
+
+function invCapacity(invItem) {
+  const total = invItem.totalStock || 0;
+  const damaged = invItem.damagedStock || 0;
+  const repair = invItem.repairStock || 0;
+  return Math.max(0, total - damaged - repair);
+}
+
+// Sums this item's quantity across CONFIRMED, ACTIVE (non-trashed) estimates
+// only — pending never reserves, done releases (its status simply isn't
+// 'confirmed' any more), and Recycle Bin items live only in roop_trash so
+// they're never read here in the first place.
+// dateStr (optional): restrict to one program date.
+// excludeEstId (optional): skip one estimate's own quantity — used to ask
+// "how much would be left for THIS booking given everyone else".
+function invReservedQty(itemName, dateStr, excludeEstId) {
+  const key = normalizeItemName(itemName);
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  let sum = 0;
+  ests.forEach(e => {
+    if (excludeEstId && e.id === excludeEstId) return;
+    if ((e.status || 'pending') !== 'confirmed') return;
+    if (dateStr && e.pDate !== dateStr) return;
+    (e.items || []).forEach(it => {
+      if ((it.qty || 0) > 0 && normalizeItemName(it.name) === key) sum += it.qty;
+    });
+  });
+  return sum;
+}
+
+// Aggregate (not date-specific) snapshot used by the Inventory List/Detail
+// page — "how much of this item is committed across all confirmed bookings
+// combined", a general business-level figure. Real same-date conflict
+// detection (below) is what actually drives shortage warnings.
+function invAggregateStatus(invItem) {
+  const capacity = invCapacity(invItem);
+  const reserved = invReservedQty(invItem.name, null, null);
+  const available = Math.max(0, capacity - reserved);
+  return { capacity, reserved, available };
+}
+
+// Date-specific availability for one item, excluding one estimate's own
+// reservation. This is the authoritative figure for shortage detection.
+function invAvailableOnDate(itemName, dateStr, excludeEstId) {
+  const invItem = getTrackedInventoryItem(itemName);
+  if (!invItem) return null; // not configured / inactive
+  const capacity = invCapacity(invItem);
+  const others = invReservedQty(itemName, dateStr, excludeEstId);
+  return Math.max(0, capacity - others);
+}
+
+// Per-item inventory rows for one booking (used by the Booking Integration
+// card). Unconfigured items are flagged distinctly so old estimates never
+// show a false shortage just because Inventory didn't exist yet.
+function getBookingInventoryStatus(est) {
+  const rows = [];
+  (est.items || []).filter(it => (it.qty || 0) > 0 && (it.name || '').trim()).forEach(it => {
+    const invItem = getTrackedInventoryItem(it.name);
+    if (!invItem) { rows.push({ name: it.name, configured: false }); return; }
+    const status = est.status || 'pending';
+    const hasDate = isValidPDate(est.pDate);
+    let row = { name: it.name, configured: true, required: it.qty, unit: invItem.unit || '' };
+    if (status === 'confirmed' && hasDate) {
+      const available = invAvailableOnDate(it.name, est.pDate, est.id);
+      row.mode = 'live';
+      row.available = available;
+      row.short = Math.max(0, it.qty - available);
+      row.ok = row.short === 0;
+    } else if (status === 'done') {
+      row.mode = 'done';
+      row.ok = true;
+    } else if (status === 'pending') {
+      row.mode = 'pending';
+      row.available = invAggregateStatus(invItem).available;
+      row.ok = true;
+    } else {
+      row.mode = 'nodate';
+      row.available = invAggregateStatus(invItem).available;
+      row.ok = true;
+    }
+    rows.push(row);
+  });
+  return rows;
+}
+
+// Every CONFIRMED, active, validly-dated booking whose item requirement
+// exceeds what's available on that same date (i.e. capacity minus every
+// OTHER confirmed booking sharing that item+date).
+function computeStockShortages() {
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const rows = [];
+  ests.forEach(e => {
+    if ((e.status || 'pending') !== 'confirmed') return;
+    if (!isValidPDate(e.pDate)) return;
+    (e.items || []).filter(it => (it.qty || 0) > 0 && (it.name || '').trim()).forEach(it => {
+      const invItem = getTrackedInventoryItem(it.name);
+      if (!invItem) return; // never flag unconfigured items
+      const available = invAvailableOnDate(it.name, e.pDate, e.id);
+      const shortage = Math.max(0, it.qty - available);
+      if (shortage > 0) {
+        rows.push({ estId: e.id, date: e.pDate, customer: e.cName, estNo: e.estNo, item: it.name, required: it.qty, available, shortage });
+      }
+    });
+  });
+  rows.sort((a, b) => a.date < b.date ? -1 : (a.date > b.date ? 1 : 0));
+  return rows;
+}
+
+function refreshInvShortageBadge() {
+  const badge = document.getElementById('inv-shortage-badge');
+  if (!badge) return;
+  const n = computeStockShortages().length;
+  badge.textContent = n ? String(n) : '';
+}
+
+// ── BOOKING INTEGRATION (estimate/booking view) ───────────────
+function renderBookingInventoryStatus() {
+  const sec = document.getElementById('binv-section');
+  if (!sec) return;
+  if (!currentEstId) { sec.style.display = 'none'; return; }
+  const est = getEstById(currentEstId);
+  if (!est) { sec.style.display = 'none'; return; }
+  const rows = getBookingInventoryStatus(est);
+  if (!rows.length) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+
+  document.getElementById('binv-list').innerHTML = rows.map(r => {
+    if (!r.configured) {
+      return '<div class="binv-row"><div><div class="binv-name">' + esc(r.name) + '</div><div class="binv-meta">Inventory not configured</div></div></div>';
+    }
+    let statusHtml, metaHtml;
+    if (r.mode === 'live') {
+      statusHtml = r.ok
+        ? '<span class="inv-status-ok">✓ Available</span>'
+        : '<span class="inv-status-short">⚠️ Short by ' + r.short.toLocaleString('en-IN') + '</span>';
+      metaHtml = 'Required ' + r.required.toLocaleString('en-IN') + ' · Available on event date: ' + r.available.toLocaleString('en-IN') + (r.unit ? ' ' + esc(r.unit) : '');
+    } else if (r.mode === 'done') {
+      statusHtml = '<span class="inv-status-ok">✅ Completed</span>';
+      metaHtml = 'Required ' + r.required.toLocaleString('en-IN') + ' · reservation released';
+    } else if (r.mode === 'pending') {
+      statusHtml = '<span class="inv-status-inactive">🟡 Potential</span>';
+      metaHtml = 'Required ' + r.required.toLocaleString('en-IN') + ' · Available overall: ' + r.available.toLocaleString('en-IN') + ' (not yet reserved)';
+    } else {
+      statusHtml = '<span class="inv-status-inactive">ℹ️ No date set</span>';
+      metaHtml = 'Required ' + r.required.toLocaleString('en-IN') + ' · Available overall: ' + r.available.toLocaleString('en-IN');
+    }
+    return '<div class="binv-row"><div><div class="binv-name">' + esc(r.name) + '</div><div class="binv-meta">' + metaHtml + '</div></div>' + statusHtml + '</div>';
+  }).join('');
+}
+
+// ── INVENTORY LIST PAGE ────────────────────────────────────────
+let invActiveFilter = 'active';
+
+function setInvActiveFilter(f) {
+  invActiveFilter = f;
+  document.querySelectorAll('#inv-active-toggle-row .chip').forEach(c => c.classList.toggle('on', c.dataset.a === f));
+  renderInventory();
+}
+
+function populateInvNameDatalist() {
+  const dl = document.getElementById('inv-name-list');
+  if (!dl) return;
+  const names = new Set(BASE.map(b => b.n));
+  JSON.parse(localStorage.getItem('roop_ests') || '[]').forEach(e => (e.items || []).forEach(it => { if (it.name) names.add(it.name); }));
+  dl.innerHTML = Array.from(names).map(n => '<option value="' + esc(n) + '">').join('');
+}
+
+function renderInventory() {
+  refreshInvShortageBadge();
+  populateInvNameDatalist();
+
+  const shortages = computeStockShortages();
+  const shortCard = document.getElementById('inv-shortage-card');
+  if (shortages.length) {
+    shortCard.style.display = 'block';
+    document.getElementById('inv-shortage-list').innerHTML = shortages.map(s =>
+      '<div class="shortage-row" onclick="loadEst(' + s.estId + ')">' +
+        '<div class="sr-top"><span>' + esc(s.item) + '</span><span>Short ' + s.shortage.toLocaleString('en-IN') + '</span></div>' +
+        '<div class="sr-meta">' + esc(s.date) + ' · ' + esc(s.customer) + ' (' + esc(s.estNo || '') + ') · Required ' + s.required.toLocaleString('en-IN') + ' / Available ' + s.available.toLocaleString('en-IN') + '</div>' +
+      '</div>'
+    ).join('');
+  } else {
+    shortCard.style.display = 'none';
+  }
+
+  let list = getInventoryItems();
+  if (invActiveFilter === 'active') list = list.filter(i => i.active !== false);
+
+  const q = (document.getElementById('inv-srch').value || '').toLowerCase().trim();
+  if (q) list = list.filter(i => (i.name || '').toLowerCase().includes(q) || (i.category || '').toLowerCase().includes(q));
+
+  list = list.slice().sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+
+  const cont = document.getElementById('inv-list');
+  if (!list.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">📦</div><div>કોઈ Inventory item નથી</div></div>';
+    return;
+  }
+  cont.innerHTML = list.map(invItem => {
+    const st = invAggregateStatus(invItem);
+    const inactive = invItem.active === false;
+    const isShort = !inactive && st.available === 0 && st.reserved > st.capacity;
+    return '<div class="inv-item' + (inactive ? ' inactive' : (isShort ? ' short' : '')) + '" onclick="showInventoryDetail(\'' + invItem.itemId + '\')">' +
+      '<div class="inv-row"><span class="inv-name">' + esc(invItem.name) + (inactive ? ' <span class="arc-badge">Inactive</span>' : '') + '</span><span class="inv-cat">' + esc(invItem.category || 'Other') + '</span></div>' +
+      '<div class="inv-stats">' +
+        '<div>Total<b>' + (invItem.totalStock || 0).toLocaleString('en-IN') + '</b></div>' +
+        '<div>Reserved<b>' + st.reserved.toLocaleString('en-IN') + '</b></div>' +
+        '<div>Available<b>' + st.available.toLocaleString('en-IN') + '</b></div>' +
+        '<div>' + (inactive ? '<span class="inv-status-inactive">Inactive</span>' : (st.available > 0 ? '<span class="inv-status-ok">Available</span>' : '<span class="inv-status-short">Fully Booked</span>')) + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openInvAddForm() {
+  document.getElementById('inv-edit-id').value = '';
+  document.getElementById('inv-name').value = '';
+  document.getElementById('inv-category').value = 'Other';
+  document.getElementById('inv-unit').value = '';
+  document.getElementById('inv-total').value = '';
+  document.getElementById('inv-damaged').value = '';
+  document.getElementById('inv-repair').value = '';
+  document.getElementById('inv-notes').value = '';
+  document.getElementById('inv-form-warn').style.display = 'none';
+  document.getElementById('inv-add-form').style.display = 'block';
+}
+function closeInvAddForm() {
+  document.getElementById('inv-add-form').style.display = 'none';
+}
+
+function saveInventoryItem() {
+  const name = document.getElementById('inv-name').value.trim();
+  if (!name) { showToast('Item Name જરૂરી છે'); return; }
+  const category = document.getElementById('inv-category').value || 'Other';
+  const unit = document.getElementById('inv-unit').value.trim();
+  const totalStock = parseFloat(document.getElementById('inv-total').value) || 0;
+  const damagedStock = parseFloat(document.getElementById('inv-damaged').value) || 0;
+  const repairStock = parseFloat(document.getElementById('inv-repair').value) || 0;
+  const notes = document.getElementById('inv-notes').value.trim();
+
+  if (totalStock < 0 || damagedStock < 0 || repairStock < 0) { showToast('Stock values 0 થી ઓછા ન હોઈ શકે'); return; }
+
+  const warnEl = document.getElementById('inv-form-warn');
+  if (damagedStock + repairStock > totalStock) {
+    warnEl.textContent = '⚠️ Damaged + Under Repair (' + (damagedStock + repairStock) + ') exceeds Total Stock (' + totalStock + ') — Available will show as 0.';
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+
+  const editId = document.getElementById('inv-edit-id').value;
+  const list = getInventoryItems();
+  const now = new Date().toISOString();
+  if (editId) {
+    const idx = list.findIndex(i => i.itemId === editId);
+    if (idx !== -1) list[idx] = Object.assign({}, list[idx], { name, category, unit, totalStock, damagedStock, repairStock, notes, updatedAt: now });
+    saveInventoryItems(list);
+    showToast('✓ Inventory item updated');
+  } else {
+    const dup = findInventoryItemByName(name);
+    if (dup) { showToast('⚠️ "' + name + '" પહેલેથી Inventory માં છે'); return; }
+    list.push({ itemId: 'inv_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7), name, category, unit, totalStock, damagedStock, repairStock, active: true, notes, createdAt: now, updatedAt: now });
+    saveInventoryItems(list);
+    showToast('✓ Inventory item added');
+  }
+  closeInvAddForm();
+  renderInventory();
+}
+
+// ── INVENTORY DETAIL PAGE ────────────────────────────────────
+let currentInvItemId = null;
+
+function showInventoryDetail(itemId) {
+  currentInvItemId = itemId;
+  showPg('pg-inventory-detail');
+}
+
+function invEditFormHtml() {
+  return '<div class="fr full"><div class="fg"><label class="fl">Item Name</label><input class="fi" id="invd-e-name" type="text"></div></div>' +
+    '<div class="fr">' +
+      '<div class="fg"><label class="fl">Category</label><select class="fi" id="invd-e-category">' +
+        ['Chairs','Tables','Sofas','Stage','Lighting','Backdrop','Mandap','Entrance','Flowers','Fabric','Props','Other'].map(c => '<option>' + c + '</option>').join('') +
+      '</select></div>' +
+      '<div class="fg"><label class="fl">Unit</label><input class="fi" id="invd-e-unit" type="text"></div>' +
+    '</div>' +
+    '<div class="fr">' +
+      '<div class="fg"><label class="fl">Total Stock</label><input class="fi" id="invd-e-total" type="number" min="0"></div>' +
+      '<div class="fg"><label class="fl">Damaged Stock</label><input class="fi" id="invd-e-damaged" type="number" min="0"></div>' +
+    '</div>' +
+    '<div class="fr">' +
+      '<div class="fg"><label class="fl">Under Repair</label><input class="fi" id="invd-e-repair" type="number" min="0"></div>' +
+      '<div class="fg"><label class="fl">Notes</label><input class="fi" id="invd-e-notes" type="text"></div>' +
+    '</div>' +
+    '<div id="invd-e-warn" style="display:none;color:#c0392b;font-size:0.72rem;margin-top:2px"></div>' +
+    '<div style="display:flex;gap:8px;margin-top:6px">' +
+      '<button class="btn bg" style="flex:1" onclick="saveInvEditForm()">💾 Save</button>' +
+      '<button class="btn bo" style="flex:1" onclick="closeInvEditForm()">Cancel</button>' +
+    '</div>';
+}
+
+function openInvEditForm() {
+  const invItem = getInventoryItemById(currentInvItemId);
+  if (!invItem) return;
+  const form = document.getElementById('invd-edit-form');
+  form.innerHTML = invEditFormHtml();
+  document.getElementById('invd-e-name').value = invItem.name || '';
+  document.getElementById('invd-e-category').value = invItem.category || 'Other';
+  document.getElementById('invd-e-unit').value = invItem.unit || '';
+  document.getElementById('invd-e-total').value = invItem.totalStock || 0;
+  document.getElementById('invd-e-damaged').value = invItem.damagedStock || 0;
+  document.getElementById('invd-e-repair').value = invItem.repairStock || 0;
+  document.getElementById('invd-e-notes').value = invItem.notes || '';
+  form.style.display = 'block';
+}
+function closeInvEditForm() {
+  const f = document.getElementById('invd-edit-form');
+  if (f) f.style.display = 'none';
+}
+
+function saveInvEditForm() {
+  const name = document.getElementById('invd-e-name').value.trim();
+  if (!name) { showToast('Item Name જરૂરી છે'); return; }
+  const category = document.getElementById('invd-e-category').value || 'Other';
+  const unit = document.getElementById('invd-e-unit').value.trim();
+  const totalStock = parseFloat(document.getElementById('invd-e-total').value) || 0;
+  const damagedStock = parseFloat(document.getElementById('invd-e-damaged').value) || 0;
+  const repairStock = parseFloat(document.getElementById('invd-e-repair').value) || 0;
+  const notes = document.getElementById('invd-e-notes').value.trim();
+
+  if (totalStock < 0 || damagedStock < 0 || repairStock < 0) { showToast('Stock values 0 થી ઓછા ન હોઈ શકે'); return; }
+  const warnEl = document.getElementById('invd-e-warn');
+  if (damagedStock + repairStock > totalStock) {
+    warnEl.textContent = '⚠️ Damaged + Under Repair (' + (damagedStock + repairStock) + ') exceeds Total Stock (' + totalStock + ') — Available will show as 0.';
+    warnEl.style.display = 'block';
+  } else {
+    warnEl.style.display = 'none';
+  }
+
+  const list = getInventoryItems();
+  const idx = list.findIndex(i => i.itemId === currentInvItemId);
+  if (idx === -1) return;
+  list[idx] = Object.assign({}, list[idx], { name, category, unit, totalStock, damagedStock, repairStock, notes, updatedAt: new Date().toISOString() });
+  saveInventoryItems(list);
+  showToast('✓ Inventory item updated');
+  closeInvEditForm();
+  renderInventoryDetail();
+}
+
+function toggleInvActive() {
+  const invItem = getInventoryItemById(currentInvItemId);
+  if (!invItem) return;
+  const list = getInventoryItems();
+  const idx = list.findIndex(i => i.itemId === currentInvItemId);
+  if (idx === -1) return;
+  list[idx].active = invItem.active === false; // flip
+  list[idx].updatedAt = new Date().toISOString();
+  saveInventoryItems(list);
+  showToast(list[idx].active ? '✓ Item activated' : '✓ Item deactivated');
+  renderInventoryDetail();
+}
+
+function renderInventoryDetail() {
+  const invItem = getInventoryItemById(currentInvItemId);
+  if (!invItem) { showToast('Item મળ્યો નથી'); showPg('pg-inventory'); return; }
+  const st = invAggregateStatus(invItem);
+  const inactive = invItem.active === false;
+
+  document.getElementById('invd-name').textContent = invItem.name;
+  document.getElementById('invd-category').textContent = invItem.category || 'Other';
+  document.getElementById('invd-total').textContent = (invItem.totalStock || 0).toLocaleString('en-IN');
+  document.getElementById('invd-reserved').textContent = st.reserved.toLocaleString('en-IN');
+  document.getElementById('invd-available').textContent = st.available.toLocaleString('en-IN');
+  document.getElementById('invd-status').textContent = inactive ? 'Inactive' : (st.available > 0 ? 'Available' : 'Fully Booked');
+  document.getElementById('invd-damaged').textContent = (invItem.damagedStock || 0).toLocaleString('en-IN');
+  document.getElementById('invd-repair').textContent = (invItem.repairStock || 0).toLocaleString('en-IN');
+  document.getElementById('invd-unit').textContent = invItem.unit || '—';
+
+  document.getElementById('invd-toggle-btn').textContent = inactive ? '▶️ Activate' : '⏸️ Deactivate';
+  closeInvEditForm();
+
+  const today = todayStr();
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]');
+  const key = normalizeItemName(invItem.name);
+  const bookings = [];
+  ests.forEach(e => {
+    if (!isValidPDate(e.pDate) || e.pDate < today) return;
+    (e.items || []).forEach(it => {
+      if ((it.qty || 0) > 0 && normalizeItemName(it.name) === key) {
+        bookings.push({ estId: e.id, date: e.pDate, customer: e.cName, estNo: e.estNo, qty: it.qty, status: e.status || 'pending' });
+      }
+    });
+  });
+  bookings.sort((a, b) => a.date < b.date ? -1 : 1);
+
+  const cont = document.getElementById('invd-bookings');
+  if (!bookings.length) {
+    cont.innerHTML = '<div class="emp"><div class="eic">🗓️</div><div>No upcoming bookings require this item</div></div>';
+  } else {
+    cont.innerHTML = bookings.map(b =>
+      '<div class="up-item" onclick="loadEst(' + b.estId + ')">' +
+        '<div class="up-info"><div class="up-name">' + esc(b.customer) + ' · ' + esc(b.estNo || '') + '</div>' +
+        '<div class="up-meta">' + esc(b.date) + ' · Qty ' + b.qty.toLocaleString('en-IN') + ' · <span class="st-sel st-' + b.status + '" style="padding:1px 6px">' + b.status + '</span></div></div>' +
+      '</div>'
+    ).join('');
+  }
+}
+
 function getEstById(id) {
   const list = JSON.parse(localStorage.getItem('roop_ests') || '[]');
   return list.find(e => e.id === id);
+}
+
+// ── BUSINESS REPORTS ──────────────────────────────────────────
+// Fully dynamic — no new localStorage store. Reads roop_ests, roop_customers,
+// roop_payments, roop_inventory and reuses the existing central calculation
+// functions (estAmounts, paymentSummary, computeStockShortages,
+// buildCustomerAggregates) rather than duplicating any formula.
+
+let reportFilter = 'today';
+let reportCustomRange = null; // { from, to }
+
+function fyRange(dateObj) {
+  // Financial Year: 1 April → 31 March
+  const y = dateObj.getFullYear();
+  const startYear = dateObj.getMonth() >= 3 ? y : y - 1; // month 3 = April (0-indexed)
+  const from = startYear + '-04-01';
+  const to = (startYear + 1) + '-03-31';
+  const label = 'FY ' + startYear + '-' + String(startYear + 1).slice(-2) + ' (' + from + ' → ' + to + ')';
+  return { from, to, label };
+}
+
+function getReportRange() {
+  const now = new Date();
+  const today = todayStr();
+  if (reportFilter === 'today') return { from: today, to: today, label: 'Today (' + today + ')' };
+  if (reportFilter === 'week') {
+    const d = new Date(today + 'T00:00:00');
+    const day = d.getDay();
+    const monday = new Date(d); monday.setDate(d.getDate() - ((day + 6) % 7));
+    const sunday = new Date(monday); sunday.setDate(monday.getDate() + 6);
+    const from = monday.toISOString().slice(0, 10), to = sunday.toISOString().slice(0, 10);
+    return { from, to, label: 'This Week (' + from + ' → ' + to + ')' };
+  }
+  if (reportFilter === 'month') {
+    const y = now.getFullYear(), m = now.getMonth();
+    const from = y + '-' + String(m + 1).padStart(2, '0') + '-01';
+    const lastDay = new Date(y, m + 1, 0).getDate();
+    const to = y + '-' + String(m + 1).padStart(2, '0') + '-' + String(lastDay).padStart(2, '0');
+    return { from, to, label: 'This Month (' + from + ' → ' + to + ')' };
+  }
+  if (reportFilter === 'year') {
+    const y = now.getFullYear();
+    return { from: y + '-01-01', to: y + '-12-31', label: 'This Year (' + y + ')' };
+  }
+  if (reportFilter === 'fy') {
+    const r = fyRange(now);
+    return r;
+  }
+  if (reportFilter === 'custom' && reportCustomRange) {
+    return { from: reportCustomRange.from, to: reportCustomRange.to, label: 'Custom (' + reportCustomRange.from + ' → ' + reportCustomRange.to + ')' };
+  }
+  return { from: today, to: today, label: 'Today (' + today + ')' };
+}
+
+function setReportFilter(f) {
+  reportFilter = f;
+  document.querySelectorAll('#rep-filters .chip').forEach(c => c.classList.toggle('on', c.dataset.f === f));
+  const customRow = document.getElementById('rep-custom-range');
+  if (customRow) customRow.style.display = (f === 'custom') ? 'grid' : 'none';
+  renderReports();
+}
+
+function applyReportCustomRange() {
+  const from = document.getElementById('rep-from').value;
+  const to = document.getElementById('rep-to').value;
+  const errEl = document.getElementById('rep-range-err');
+  if (from && to && from > to) {
+    errEl.textContent = '⚠️ From date, To date પછી ન હોઈ શકે';
+    errEl.style.display = 'block';
+    return;
+  }
+  errEl.style.display = 'none';
+  reportCustomRange = (from && to) ? { from, to } : null;
+  renderReports();
+}
+
+// Program-Date-scoped active estimates within [from,to] — used for every
+// booking/financial/customer/item/program report section.
+function reportEstimatesInRange(from, to) {
+  const ests = JSON.parse(localStorage.getItem('roop_ests') || '[]'); // trash already excluded — separate store
+  return ests.filter(e => isValidPDate(e.pDate) && e.pDate >= from && e.pDate <= to);
+}
+// Same convention used across the app: "booking amount" figures are
+// confirmed + done (a pending estimate is a draft, not a committed booking).
+function reportBookingsInRange(from, to) {
+  return reportEstimatesInRange(from, to).filter(e => (e.status || 'pending') !== 'pending');
+}
+
+// Payment-Date-scoped roop_payments records within [from,to] — kept
+// deliberately separate from Program-Date scoping (see section 5/15 of the
+// spec): a payment received on 10 Aug for a 20 Aug event belongs to the
+// 10 Aug payment report, not the 20 Aug one.
+function reportPaymentsInRange(from, to) {
+  const payments = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  return payments.filter(p => p.date && p.date >= from && p.date <= to);
+}
+
+function renderReports() {
+  const { from, to, label } = getReportRange();
+  document.getElementById('rep-range-label').textContent = label;
+
+  const allEstsInRange = reportEstimatesInRange(from, to);
+  const bookingsInRange = reportBookingsInRange(from, to);
+
+  // ── Booking Summary (all statuses, Program Date scoped) ──
+  const totalEstimates = allEstsInRange.length;
+  const confirmedCount = allEstsInRange.filter(e => (e.status || 'pending') === 'confirmed').length;
+  const doneCount = allEstsInRange.filter(e => (e.status || 'pending') === 'done').length;
+  const pendingCount = allEstsInRange.filter(e => (e.status || 'pending') === 'pending').length;
+
+  // ── Financial Summary (confirmed+done bookings, Program Date scoped) ──
+  let gross = 0, discount = 0, net = 0, received = 0, due = 0;
+  bookingsInRange.forEach(e => {
+    const amt = estAmounts(e);
+    const pay = paymentSummary(e.id);
+    gross += amt.total; discount += amt.disc; net += amt.net;
+    received += pay.paid; due += pay.due;
+  });
+
+  // ── Payment Report (Payment Date scoped) ──
+  const paymentsInRange = reportPaymentsInRange(from, to);
+  const totalReceivedByPaymentDate = paymentsInRange.reduce((s, p) => s + (p.amount || 0), 0);
+  const paymentCount = paymentsInRange.length;
+  const avgPayment = paymentCount ? (totalReceivedByPaymentDate / paymentCount) : 0;
+  const modeOrder = ['Cash', 'UPI', 'Bank Transfer', 'Card', 'Cheque', 'Other', 'Existing Advance'];
+  const modeTotals = {};
+  modeOrder.forEach(m => modeTotals[m] = 0);
+  paymentsInRange.forEach(p => {
+    const m = modeOrder.includes(p.mode) ? p.mode : 'Other';
+    modeTotals[m] += (p.amount || 0);
+  });
+
+  // ── Due Report (confirmed+done bookings in range, due > 0) ──
+  const dueRows = bookingsInRange
+    .map(e => ({ e, amt: estAmounts(e), pay: paymentSummary(e.id) }))
+    .filter(r => r.pay.due > 0)
+    .sort((a, b) => b.pay.due - a.pay.due);
+  const totalOutstandingDue = dueRows.reduce((s, r) => s + r.pay.due, 0);
+
+  // ── Customer Report ──
+  const allCustomers = buildCustomerAggregates(); // all-time, active estimates only (Phase 5 central function)
+  const totalCustomersAllTime = getCustomers().filter(c => !c.archived).length;
+  const custKeysInRange = new Set(bookingsInRange.map(e => customerMatchKey(e.cName, e.cMob, e.cAddr)));
+  const custBusinessInRange = {}; // key -> { name, mobile, bookings, net, paid, due }
+  bookingsInRange.forEach(e => {
+    const key = customerMatchKey(e.cName, e.cMob, e.cAddr);
+    if (!custBusinessInRange[key]) custBusinessInRange[key] = { name: e.cName || 'Unknown', mobile: e.cMob || '', bookings: 0, net: 0, paid: 0, due: 0 };
+    const amt = estAmounts(e), pay = paymentSummary(e.id);
+    custBusinessInRange[key].bookings += 1;
+    custBusinessInRange[key].net += amt.net;
+    custBusinessInRange[key].paid += pay.paid;
+    custBusinessInRange[key].due += pay.due;
+  });
+  const topCustomers = Object.values(custBusinessInRange).sort((a, b) => b.net - a.net).slice(0, 10);
+  const customersWithActiveBookings = custKeysInRange.size;
+  const customersWithDue = Object.values(custBusinessInRange).filter(c => c.due > 0).length;
+
+  // ── Inventory Report (reuses Phase 6 computeStockShortages — no new
+  // formula; only filtered here by the report's own Program-Date range) ──
+  const invItems = getInventoryItems();
+  const activeInvCount = invItems.filter(i => i.active !== false).length;
+  const shortages = computeStockShortages().filter(s => s.date >= from && s.date <= to);
+
+  // ── Most Used Items (confirmed+done bookings in range) ──
+  const itemAgg = {}; // name -> { qty, bookings }
+  bookingsInRange.forEach(e => {
+    (e.items || []).filter(it => (it.qty || 0) > 0 && (it.name || '').trim()).forEach(it => {
+      const key = it.name.trim();
+      if (!itemAgg[key]) itemAgg[key] = { name: key, qty: 0, bookings: 0 };
+      itemAgg[key].qty += it.qty;
+      itemAgg[key].bookings += 1;
+    });
+  });
+  const mostUsedItems = Object.values(itemAgg).sort((a, b) => b.qty - a.qty || b.bookings - a.bookings).slice(0, 10);
+
+  // ── Program / Event Type Report (confirmed+done bookings in range) ──
+  const progAgg = {}; // type -> { count, net }
+  bookingsInRange.forEach(e => {
+    const type = (e.pType || 'Unspecified').trim() || 'Unspecified';
+    if (!progAgg[type]) progAgg[type] = { type, count: 0, net: 0 };
+    progAgg[type].count += 1;
+    progAgg[type].net += estAmounts(e).net;
+  });
+  const programReport = Object.values(progAgg).sort((a, b) => b.net - a.net);
+
+  // ── Top summary cards ──
+  document.getElementById('rep-cards').innerHTML = [
+    { ic: '📄', val: totalEstimates, lbl: 'Bookings' },
+    { ic: '💵', val: '₹' + net.toLocaleString('en-IN'), lbl: 'Net Amount' },
+    { ic: '✅', val: '₹' + received.toLocaleString('en-IN'), lbl: 'Received' },
+    { ic: '⚠️', val: '₹' + due.toLocaleString('en-IN'), lbl: 'Due' },
+    { ic: '👥', val: customersWithActiveBookings, lbl: 'Customers' },
+    { ic: '💳', val: paymentCount, lbl: 'Payments' }
+  ].map(c => '<div class="dcard dc-g"><div class="dc-ic">' + c.ic + '</div><div class="dc-val">' + c.val + '</div><div class="dc-lbl">' + c.lbl + '</div></div>').join('');
+
+  // ── Body sections ──
+  let html = '';
+
+  html += '<div class="card"><div class="ch">📋 Booking Summary</div><div class="cb">' +
+    repRow('Number of Estimates', totalEstimates) +
+    repRow('Confirmed Bookings', confirmedCount) +
+    repRow('Completed Programs', doneCount) +
+    repRow('Pending Bookings', pendingCount) +
+    '</div></div>';
+
+  html += '<div class="card"><div class="ch">💰 Financial Summary <span style="font-weight:400;font-size:0.62rem;color:var(--tm)">(confirmed + completed, by Program Date)</span></div><div class="cb">' +
+    repRow('Total Booking Amount (Gross)', '₹' + gross.toLocaleString('en-IN')) +
+    repRow('Total Discount', '₹' + discount.toLocaleString('en-IN')) +
+    repRow('Net Booking Amount', '₹' + net.toLocaleString('en-IN')) +
+    repRow('Total Received', '₹' + received.toLocaleString('en-IN')) +
+    repRow('Total Due', '₹' + due.toLocaleString('en-IN')) +
+    '</div></div>';
+
+  html += '<div class="card"><div class="ch">💳 Payment Report <span style="font-weight:400;font-size:0.62rem;color:var(--tm)">(by Payment Date)</span></div><div class="cb">' +
+    repRow('Total Received', '₹' + totalReceivedByPaymentDate.toLocaleString('en-IN')) +
+    repRow('Number of Payments', paymentCount) +
+    repRow('Average Payment', '₹' + Math.round(avgPayment).toLocaleString('en-IN')) +
+    '<div style="margin-top:8px;font-size:0.68rem;color:var(--tm);font-weight:800;text-transform:uppercase">By Payment Mode</div>' +
+    modeOrder.filter(m => modeTotals[m] > 0).map(m => repRow(m, '₹' + modeTotals[m].toLocaleString('en-IN'))).join('') +
+    (paymentCount === 0 ? '<div class="emp" style="padding:10px"><div>આ સમયગાળામાં કોઈ payment નથી</div></div>' : '') +
+    '</div></div>';
+
+  html += '<div class="card"><div class="ch">⚠️ Due Report</div><div class="cb">' +
+    repRow('Total Outstanding Due', '₹' + totalOutstandingDue.toLocaleString('en-IN')) +
+    '</div></div>';
+  html += '<div id="rep-due-list" style="margin-bottom:12px">' + (dueRows.length
+    ? dueRows.map(r => buildPayItemHtml(Object.assign({ _pay: r.pay }, r.e))).join('')
+    : '<div class="emp"><div class="eic">✅</div><div>આ સમયગાળામાં કોઈ due નથી</div></div>') + '</div>';
+
+  html += '<div class="card"><div class="ch">👥 Customer Report</div><div class="cb">' +
+    repRow('Total Customers (all-time)', totalCustomersAllTime) +
+    repRow('Customers With Bookings In Range', customersWithActiveBookings) +
+    repRow('Customers With Outstanding Due', customersWithDue) +
+    '</div></div>';
+  html += '<div class="card" style="margin-top:-4px"><div class="ch">🏆 Top Customers <span style="font-weight:400;font-size:0.62rem;color:var(--tm)">(by business in range)</span></div><div class="cb">' +
+    (topCustomers.length ? topCustomers.map((c, i) =>
+      repRow((i + 1) + '. ' + esc(c.name) + ' (' + c.bookings + ' booking' + (c.bookings > 1 ? 's' : '') + ')', '₹' + c.net.toLocaleString('en-IN'))
+    ).join('') : '<div class="emp" style="padding:10px"><div>આ સમયગાળામાં કોઈ customer નથી</div></div>') +
+    '</div></div>';
+
+  html += '<div class="card"><div class="ch">📦 Inventory Report</div><div class="cb">' +
+    repRow('Total Inventory Items', invItems.length) +
+    repRow('Active Inventory Items', activeInvCount) +
+    repRow('Items With Stock Shortages', shortages.length) +
+    '</div></div>';
+  if (shortages.length) {
+    html += '<div style="margin-bottom:12px">' + shortages.map(s =>
+      '<div class="shortage-row" onclick="loadEst(' + s.estId + ')">' +
+        '<div class="sr-top"><span>' + esc(s.item) + '</span><span>Short ' + s.shortage.toLocaleString('en-IN') + '</span></div>' +
+        '<div class="sr-meta">' + esc(s.date) + ' · ' + esc(s.customer) + ' (' + esc(s.estNo || '') + ') · Required ' + s.required.toLocaleString('en-IN') + ' / Available ' + s.available.toLocaleString('en-IN') + '</div>' +
+      '</div>'
+    ).join('') + '</div>';
+  }
+
+  html += '<div class="card"><div class="ch">🪑 Most Used Items</div><div class="cb">' +
+    (mostUsedItems.length ? mostUsedItems.map((it, i) =>
+      repRow((i + 1) + '. ' + esc(it.name), it.qty > 0 ? it.qty.toLocaleString('en-IN') : (it.bookings + ' booking' + (it.bookings > 1 ? 's' : '')))
+    ).join('') : '<div class="emp" style="padding:10px"><div>આ સમયગાળામાં કોઈ item વપરાયો નથી</div></div>') +
+    '</div></div>';
+
+  html += '<div class="card"><div class="ch">🎉 Program / Event Report</div><div class="cb">' +
+    (programReport.length ? programReport.map(p =>
+      repRow(esc(p.type) + ' (' + p.count + ')', '₹' + p.net.toLocaleString('en-IN'))
+    ).join('') : '<div class="emp" style="padding:10px"><div>આ સમયગાળામાં કોઈ program નથી</div></div>') +
+    '</div></div>';
+
+  document.getElementById('rep-body').innerHTML = html;
+}
+
+function repRow(label, value) {
+  return '<div class="rep-row"><span class="rr-lbl">' + label + '</span><span class="rr-val">' + value + '</span></div>';
+}
+
+function printReport() {
+  window.print();
+}
+
+function csvEscape(v) {
+  const s = String(v == null ? '' : v);
+  if (/[",\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+  return s;
+}
+
+function exportReportCSV() {
+  const { from, to, label } = getReportRange();
+  const allEstsInRange = reportEstimatesInRange(from, to);
+  const bookingsInRange = reportBookingsInRange(from, to);
+  const paymentsInRange = reportPaymentsInRange(from, to);
+
+  let rows = [];
+  rows.push(['Roop Decorators — Business Report']);
+  rows.push(['Range', label]);
+  rows.push([]);
+  rows.push(['BOOKING SUMMARY']);
+  rows.push(['Total Estimates', allEstsInRange.length]);
+  rows.push(['Confirmed', allEstsInRange.filter(e => (e.status || 'pending') === 'confirmed').length]);
+  rows.push(['Completed', allEstsInRange.filter(e => (e.status || 'pending') === 'done').length]);
+  rows.push(['Pending', allEstsInRange.filter(e => (e.status || 'pending') === 'pending').length]);
+  rows.push([]);
+
+  let gross = 0, discount = 0, net = 0, received = 0, due = 0;
+  bookingsInRange.forEach(e => {
+    const amt = estAmounts(e), pay = paymentSummary(e.id);
+    gross += amt.total; discount += amt.disc; net += amt.net; received += pay.paid; due += pay.due;
+  });
+  rows.push(['FINANCIAL SUMMARY (confirmed+completed, Program Date)']);
+  rows.push(['Gross Amount', gross]);
+  rows.push(['Discount', discount]);
+  rows.push(['Net Amount', net]);
+  rows.push(['Received', received]);
+  rows.push(['Due', due]);
+  rows.push([]);
+
+  rows.push(['PAYMENTS (Payment Date)', 'Date', 'Estimate No', 'Customer', 'Amount', 'Mode']);
+  const estMap = {};
+  JSON.parse(localStorage.getItem('roop_ests') || '[]').forEach(e => { estMap[e.id] = e; });
+  paymentsInRange.forEach(p => {
+    const e = estMap[p.estimateId];
+    rows.push(['', p.date, e ? e.estNo : '', e ? e.cName : 'Unknown', p.amount, p.mode]);
+  });
+  rows.push([]);
+
+  rows.push(['DUE LIST', 'Estimate No', 'Customer', 'Program', 'Program Date', 'Net', 'Paid', 'Due']);
+  bookingsInRange.forEach(e => {
+    const pay = paymentSummary(e.id);
+    if (pay.due > 0) rows.push(['', e.estNo, e.cName, e.pType, e.pDate, estAmounts(e).net, pay.paid, pay.due]);
+  });
+
+  const csv = rows.map(r => r.map(csvEscape).join(',')).join('\n');
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'RoopDecorators_Report_' + from + '_to_' + to + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('✓ CSV downloaded');
 }
 
 function setStatusFilter(s) {
@@ -2336,6 +3270,18 @@ function renderDashboard() {
     payList.innerHTML = '<div class="emp"><div class="eic">✅</div><div>કોઈ payment બાકી નથી</div></div>';
   } else {
     payList.innerHTML = dueList.map(e => buildPayItemHtml(e)).join('');
+  }
+
+  // INVENTORY ALERTS (small, single-line — full detail lives in the Inventory page)
+  const invAlert = document.getElementById('dash-inv-alert');
+  if (invAlert) {
+    const shortageCount = computeStockShortages().length;
+    if (shortageCount > 0) {
+      invAlert.style.display = 'flex';
+      invAlert.querySelector('span').textContent = '⚠️ ' + shortageCount + ' Stock Shortage' + (shortageCount > 1 ? 's' : '');
+    } else {
+      invAlert.style.display = 'none';
+    }
   }
 }
 
@@ -2856,6 +3802,7 @@ function buildCalEventCardHtml(e) {
   const amt = estAmounts(e);
   const pay = paymentSummary(e.id);
   const st = e.status || 'pending';
+  const hasShortage = st === 'confirmed' && getBookingInventoryStatus(e).some(r => r.configured && r.mode === 'live' && !r.ok);
   return '<div class="cal-event-card st-' + st + '" onclick="loadEst(' + e.id + ')">' +
     '<div class="cev-top"><span class="cev-name">' + esc(e.cName || 'Unknown') + '</span><span class="cev-no">' + esc(e.estNo || '') + '</span></div>' +
     '<div class="cev-meta">' + esc(e.pType || 'Program') + (e.pPlace ? ' · ' + esc(e.pPlace) : '') + (e.pTime ? ' · ' + esc(e.pTime) : '') +
@@ -2865,6 +3812,7 @@ function buildCalEventCardHtml(e) {
       '<div>Paid<b>₹' + pay.paid.toLocaleString('en-IN') + '</b></div>' +
       '<div>Due<b>₹' + pay.due.toLocaleString('en-IN') + '</b></div>' +
     '</div>' +
+    (hasShortage ? '<div class="cal-shortage-tag">⚠️ Stock Shortage</div>' : '') +
   '</div>';
 }
 
@@ -2991,6 +3939,7 @@ renderDashboard();
   const badge = document.getElementById('trash-count-badge');
   if (badge && trash.length) badge.textContent = String(trash.length);
 })();
+refreshInvShortageBadge();
 
 const mobInput = document.getElementById('c-mob');
 if (mobInput) mobInput.addEventListener('blur', tryAutofillFromMobile);
