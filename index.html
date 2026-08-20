@@ -189,6 +189,10 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 .pgt { font-size: 1.05rem; font-weight: 800; color: var(--m); margin-top: 3px; }
 .pterms { margin-top: 12px; font-size: 0.68rem; color: var(--tm); border-top: 1px dashed #ddd; padding-top: 8px; line-height: 1.55; }
 .pcontact { margin-top: 7px; font-size: 0.7rem; color: var(--tm); text-align: center; }
+.pdoctitle { text-align: center; font-weight: 900; font-size: 0.95rem; letter-spacing: 1.5px; color: var(--g); background: var(--md); border-radius: 8px; padding: 5px 0; margin: 8px 0 12px; }
+.doc-action-btn { background: #fff; border: 1.5px solid var(--crd); border-radius: 9px; padding: 10px 14px; font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 0.8rem; color: var(--tx); display: flex; align-items: center; gap: 8px; cursor: pointer; text-align: left; }
+.doc-action-btn:active { background: var(--crd); }
+.doc-action-btn .dab-ic { font-size: 1rem; }
 
 .emp { text-align: center; padding: 36px 16px; color: var(--tm); }
 .eic { font-size: 2.8rem; margin-bottom: 8px; }
@@ -594,6 +598,15 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
     <div class="cb" id="binv-list"></div>
   </div>
 
+  <!-- DOCUMENTS -->
+  <div class="card" id="doc-section" style="display:none">
+    <div class="ch">📑 Documents</div>
+    <div class="cb">
+      <div class="fg"><label class="fl">Document Date <span style="font-weight:400;color:var(--tm)">(separate from Program Date)</span></label><input class="fi" id="doc-date" type="date"></div>
+      <div style="display:flex;flex-direction:column;gap:8px;margin-top:10px" id="doc-actions-list"></div>
+    </div>
+  </div>
+
   <div class="brow">
     <button class="btn bg" onclick="saveEst()">💾 Save</button>
     <button class="btn bw" onclick="shareWhatsApp()">💬 WhatsApp</button>
@@ -681,6 +694,9 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   <div class="brow nop" style="margin-top:9px">
     <button class="btn bw" onclick="sharePDF()">💬 Share</button>
     <button class="btn bg" onclick="window.print()">🖨️ Browser Print</button>
+  </div>
+  <div class="brow nop" style="margin-top:9px">
+    <button class="btn bw" style="width:100%" onclick="shareCurrentDocWhatsApp()">💬 WhatsApp Message</button>
   </div>
 </div>
 
@@ -1051,6 +1067,9 @@ function fresh() {
 let items = fresh();
 let currentEstId = null;
 let currentPrintData = null;
+let currentDocType = 'estimate'; // 'estimate' | 'confirmation' | 'invoice' | 'finalbill' | 'receipt' — used only to tag generated filenames
+let currentReceiptNo = null;
+let currentReceiptPaymentId = null;
 let statusFilter = 'all';
 let deferredInstallPrompt = null;
 let activeTemplateId = null;
@@ -1074,7 +1093,7 @@ function showPg(id) {
   document.getElementById(id).classList.add('on');
   document.querySelectorAll('.nb').forEach(b => b.classList.remove('on'));
   if (id === 'pg-dashboard') { document.getElementById('nb-home').classList.add('on'); renderDashboard(); }
-  if (id === 'pg-new')  { populateCustomerList(); populateTplQuickSwitch(); calcTot(); renderPaymentSection(); renderBookingInventoryStatus(); }
+  if (id === 'pg-new')  { populateCustomerList(); populateTplQuickSwitch(); calcTot(); renderPaymentSection(); renderBookingInventoryStatus(); renderDocumentSection(); }
   if (id === 'pg-hist') { document.getElementById('nb-hist').classList.add('on'); renderHist(); }
   if (id === 'pg-set')  { renderSettingsForm(); }
   if (id === 'pg-tmpl-list') { renderTplList(); }
@@ -1218,6 +1237,7 @@ function renderItems() {
   calcTot();
   filterItems();
   renderBookingInventoryStatus();
+  renderDocumentSection();
 }
 
 function updateTplBanner() {
@@ -1474,6 +1494,7 @@ function clearForm() {
   document.getElementById('add-item-form').classList.remove('open');
   renderPaymentSection();
   renderBookingInventoryStatus();
+  renderDocumentSection();
   const searchEl = document.getElementById('item-search');
   if (searchEl) searchEl.value = '';
   renderItems();
@@ -1540,15 +1561,327 @@ function statusLabel(st) {
   return '🟡 Pending';
 }
 
+// ── DOCUMENTS (Estimate / Booking Confirmation / Invoice / Payment Receipt /
+//    Final Bill) ─────────────────────────────────────────────
+// Reuses the existing #pcont + downloadPDF()/sharePDF()/window.print()
+// pipeline — no new PDF library, no new document database. Everything here
+// is rendered on demand from roop_ests, roop_payments, roop_settings.
+// Historical customer/program data always comes from the estimate record
+// itself (est.cName/cMob/cAddr/pType/...), never from the current Customer
+// Management profile, so old documents stay accurate to what was agreed.
+
+function getDocDate() {
+  const el = document.getElementById('doc-date');
+  return (el && el.value) ? el.value : todayStr();
+}
+
+function docHeaderHtml(settings, titleText) {
+  const logoHtml = settings.logo
+    ? '<img src="' + settings.logo + '" style="width:46px;height:46px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 6px;border:2px solid var(--g)">'
+    : '';
+  return logoHtml +
+    '<div class="pht">' + (settings.logo ? '' : '🌸 ') + esc(settings.bizName || 'Roop Decorators') + '</div>' +
+    '<div class="phs">✦ ' + esc(settings.tagline || '') + ' ✦</div>' +
+    (titleText ? '<div class="pdoctitle">' + esc(titleText) + '</div>' : '');
+}
+
+function docCustomerInfoRows(d) {
+  let rows = '<div class="pir"><span class="pil">Customer:</span><span class="piv">' + esc(d.cName || '-') + '</span></div>' +
+    '<div class="pir"><span class="pil">Mobile:</span><span class="piv">' + esc(d.cMob || '–') + '</span></div>';
+  if (d.cMob2) rows += '<div class="pir"><span class="pil">Alt. Mobile:</span><span class="piv">' + esc(d.cMob2) + '</span></div>';
+  rows += '<div class="pir"><span class="pil">Address:</span><span class="piv">' + esc(d.cAddr || '–') + '</span></div>';
+  return rows;
+}
+
+function docProgramInfoRows(d) {
+  let rows = '<div class="pir"><span class="pil">Program:</span><span class="piv">' + esc(d.pType || '–') + '</span></div>' +
+    '<div class="pir"><span class="pil">Venue:</span><span class="piv">' + esc(d.pPlace || '–') + '</span></div>' +
+    '<div class="pir"><span class="pil">Program Date:</span><span class="piv">' + esc(d.pDate || '–') + '</span></div>';
+  if (d.pTime) rows += '<div class="pir"><span class="pil">Time:</span><span class="piv">' + esc(d.pTime) + '</span></div>';
+  return rows;
+}
+
+function docItemTableHtml(items) {
+  const active = (items || []).filter(it => (it.qty || 0) > 0);
+  const rows = active.map((it, idx) => {
+    const r = getRate(it);
+    return '<tr><td>' + (idx + 1) + '</td><td>' + esc(it.name) + '</td><td style="text-align:center">' + it.qty + '</td><td style="text-align:right">₹' + r.toLocaleString('en-IN') + '</td><td style="text-align:right">₹' + (it.qty * r).toLocaleString('en-IN') + '</td></tr>';
+  }).join('');
+  return '<table class="ptbl"><thead><tr><th>Sr.</th><th>Item</th><th style="text-align:center">Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amount</th></tr></thead><tbody>' + rows + '</tbody></table>';
+}
+
+// Zero-value suppression per spec: Discount hidden at 0, Paid hidden at 0,
+// Due hidden at 0. Subtotal and Net Amount always shown (core totals).
+function docFinancialSummaryHtml(subtotal, discount, net, paid, due, opts) {
+  opts = opts || {};
+  let html = '<div class="pts">';
+  html += '<div>Subtotal: <strong>₹' + subtotal.toLocaleString('en-IN') + '</strong></div>';
+  if (discount > 0) html += '<div>Discount: <strong>₹' + discount.toLocaleString('en-IN') + '</strong></div>';
+  html += '<div class="pgt">Net Amount: ₹' + net.toLocaleString('en-IN') + '</div>';
+  if (paid > 0) html += '<div>Paid: <strong>₹' + paid.toLocaleString('en-IN') + '</strong></div>';
+  if (due > 0) html += '<div style="color:var(--m);font-weight:800">Due: ₹' + due.toLocaleString('en-IN') + '</div>';
+  else if (opts.fullyPaidTag) html += '<div style="color:var(--ok-done);font-weight:800">✓ Fully Paid</div>';
+  html += '</div>';
+  return html;
+}
+
+function docFooterHtml(settings) {
+  let html = '';
+  if (settings.terms) html += '<div class="pterms"><strong>Terms &amp; Conditions:</strong><br>' + esc(settings.terms).replace(/\n/g, '<br>') + '</div>';
+  const bits = [];
+  if (settings.phone) bits.push('📞 ' + esc(settings.phone));
+  if (settings.email) bits.push('✉️ ' + esc(settings.email));
+  if (settings.addr) bits.push(esc(settings.addr));
+  if (bits.length) html += '<div class="pcontact">' + bits.join(' · ') + '</div>';
+  return html;
+}
+
+// Populates the "Documents" card on a saved booking with only the document
+// types that make sense for its current state (spec section 18).
+function renderDocumentSection() {
+  const sec = document.getElementById('doc-section');
+  if (!sec) return;
+  if (!currentEstId) { sec.style.display = 'none'; return; }
+  const est = getEstById(currentEstId);
+  if (!est) { sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+
+  const dateEl = document.getElementById('doc-date');
+  if (dateEl && !dateEl.value) dateEl.value = todayStr();
+
+  const status = est.status || 'pending';
+  const pay = paymentSummary(est.id);
+  const actions = [{ ic: '📋', lbl: 'Estimate', fn: "showDocument('estimate')" }];
+  if (status === 'confirmed' || status === 'done') {
+    actions.push({ ic: '✅', lbl: 'Booking Confirmation', fn: "showDocument('confirmation')" });
+    actions.push({ ic: '🧾', lbl: 'Invoice', fn: "showDocument('invoice')" });
+  }
+  if (status === 'done') {
+    actions.push({ ic: '📄', lbl: 'Final Bill', fn: "showDocument('finalbill')" });
+  }
+  document.getElementById('doc-actions-list').innerHTML = actions.map(a =>
+    '<button class="doc-action-btn" onclick="' + a.fn + '"><span class="dab-ic">' + a.ic + '</span>' + a.lbl + '</button>'
+  ).join('') + (pay.payments.length
+    ? '<div style="font-size:0.68rem;color:var(--tm);margin-top:2px">🧾 Payment Receipts: open a payment in Payment History above and tap Receipt.</div>'
+    : '<div style="font-size:0.68rem;color:var(--tm);margin-top:2px">🧾 Payment Receipt becomes available once a payment is recorded.</div>');
+}
+
+function showDocument(docType) {
+  const est = getEstById(currentEstId);
+  if (!est) { showToast('Estimate મળ્યો નથી'); return; }
+  if (docType === 'estimate') { showPrint(est); return; } // reuse the existing, unmodified-layout Estimate renderer
+
+  currentDocType = docType;
+  const settings = loadSettings();
+  const amt = estAmounts(est);
+  const pay = paymentSummary(est.id);
+  const docDate = getDocDate();
+
+  const titleMap = { confirmation: 'BOOKING CONFIRMATION', invoice: 'INVOICE', finalbill: 'FINAL BILL' };
+  const numLabelMap = { confirmation: 'Booking No', invoice: 'Invoice No', finalbill: 'Bill No' };
+  const dateLabelMap = { confirmation: 'Booking Date', invoice: 'Invoice Date', finalbill: 'Bill Date' };
+
+  const statusHtml = (docType === 'confirmation')
+    ? '<div style="text-align:center;margin:6px 0;font-weight:800;color:var(--ok-confirmed)">Status: Confirmed</div>'
+    : '';
+  const finOpts = { fullyPaidTag: docType === 'finalbill' };
+
+  document.getElementById('pcont').innerHTML =
+    '<div class="pp">' +
+      docHeaderHtml(settings, titleMap[docType]) +
+      '<div class="pmeta-row"><span>' + numLabelMap[docType] + ': ' + esc(est.estNo || '') + '</span><span>' + dateLabelMap[docType] + ': ' + esc(docDate) + '</span></div>' +
+      '<div class="pig">' + docCustomerInfoRows(est) + docProgramInfoRows(est) + '</div>' +
+      statusHtml +
+      docItemTableHtml(est.items) +
+      docFinancialSummaryHtml(amt.total, amt.disc, amt.net, pay.paid, pay.due, finOpts) +
+      (est.pNotes ? '<div style="margin-top:8px;font-size:0.72rem;color:var(--tm)">Notes: ' + esc(est.pNotes) + '</div>' : '') +
+      docFooterHtml(settings) +
+    '</div>';
+
+  currentPrintData = est;
+  showPg('pg-print');
+}
+
+function shareDocumentWhatsApp(docType) {
+  const est = getEstById(currentEstId);
+  if (!est) return;
+  if (docType === 'estimate') { shareWhatsApp(est); return; }
+  const settings = loadSettings();
+  const amt = estAmounts(est);
+  const pay = paymentSummary(est.id);
+  const titleMap = { confirmation: 'Booking Confirmation', invoice: 'Invoice', finalbill: 'Final Bill' };
+  let lines = [];
+  lines.push('🌸 *' + (settings.bizName || 'Roop Decorators') + '*');
+  lines.push('');
+  lines.push('*' + titleMap[docType] + '*');
+  lines.push('');
+  if (est.estNo) lines.push((docType === 'invoice' ? 'Invoice No' : 'No') + ': ' + est.estNo);
+  lines.push('Customer: ' + (est.cName || '-'));
+  if (est.pType) lines.push('Program: ' + est.pType);
+  if (est.pDate) lines.push('Date: ' + est.pDate);
+  lines.push('');
+  lines.push('Net Amount: ₹' + amt.net.toLocaleString('en-IN'));
+  if (pay.paid > 0) lines.push('Paid: ₹' + pay.paid.toLocaleString('en-IN'));
+  if (pay.due > 0) lines.push('Due: ₹' + pay.due.toLocaleString('en-IN'));
+  lines.push('');
+  lines.push('Thank you! 🙏');
+  const text = lines.join('\n');
+  let phone = (est.cMob || '').replace(/\D/g, '');
+  if (phone.length === 10) phone = '91' + phone;
+  const url = (phone.length >= 10) ? ('https://wa.me/' + phone + '?text=' + encodeURIComponent(text)) : ('https://wa.me/?text=' + encodeURIComponent(text));
+  window.open(url, '_blank');
+}
+
+// ── PAYMENT RECEIPTS ───────────────────────────────────────────
+// Each payment gets its own lazily-assigned, stable receipt number, cached
+// on that payment record only (roop_payments) — never written to roop_ests.
+function nextReceiptNo() {
+  let counter = parseInt(localStorage.getItem('roop_receipt_counter') || '0', 10);
+  counter += 1;
+  localStorage.setItem('roop_receipt_counter', String(counter));
+  return 'RD-RCT-' + String(counter).padStart(4, '0');
+}
+
+function getOrAssignReceiptNo(paymentId) {
+  const all = JSON.parse(localStorage.getItem('roop_payments') || '[]');
+  const idx = all.findIndex(p => p.paymentId === paymentId);
+  if (idx === -1) return null;
+  if (!all[idx].receiptNo) {
+    all[idx].receiptNo = nextReceiptNo();
+    localStorage.setItem('roop_payments', JSON.stringify(all));
+  }
+  return all[idx].receiptNo;
+}
+
+// Chronological (date, then createdAt) position of one payment among all of
+// an estimate's payments — this defines "Previously Paid" / "This Payment" /
+// "Total Paid (as of this receipt)" exactly as the spec's worked example.
+function receiptLedgerPosition(estimateId, paymentId) {
+  const payments = getPaymentsForEst(estimateId).slice().sort((a, b) => {
+    if (a.date !== b.date) return a.date < b.date ? -1 : 1;
+    return (a.createdAt || '') < (b.createdAt || '') ? -1 : 1;
+  });
+  const idx = payments.findIndex(p => p.paymentId === paymentId);
+  if (idx === -1) return null;
+  const previouslyPaid = payments.slice(0, idx).reduce((s, p) => s + (p.amount || 0), 0);
+  const thisPayment = payments[idx].amount || 0;
+  const totalPaid = previouslyPaid + thisPayment;
+  return { payment: payments[idx], previouslyPaid, thisPayment, totalPaid };
+}
+
+function showPaymentReceipt(paymentId) {
+  const est = getEstById(currentEstId);
+  if (!est) { showToast('Estimate મળ્યો નથી'); return; }
+  const pos = receiptLedgerPosition(est.id, paymentId);
+  if (!pos) { showToast('Payment મળ્યું નથી'); return; }
+
+  const receiptNo = getOrAssignReceiptNo(paymentId);
+  currentReceiptNo = receiptNo;
+  currentReceiptPaymentId = paymentId;
+  currentDocType = 'receipt';
+  const settings = loadSettings();
+  const net = estAmounts(est).net;
+  const due = Math.max(0, net - pos.totalPaid);
+  const docDate = getDocDate();
+
+  document.getElementById('pcont').innerHTML =
+    '<div class="pp">' +
+      docHeaderHtml(settings, 'PAYMENT RECEIPT') +
+      '<div class="pmeta-row"><span>Receipt No: ' + esc(receiptNo) + '</span><span>Receipt Date: ' + esc(docDate) + '</span></div>' +
+      '<div class="pig">' +
+        '<div class="pir"><span class="pil">Customer:</span><span class="piv">' + esc(est.cName || '-') + '</span></div>' +
+        '<div class="pir"><span class="pil">Mobile:</span><span class="piv">' + esc(est.cMob || '–') + '</span></div>' +
+        '<div class="pir"><span class="pil">Estimate No:</span><span class="piv">' + esc(est.estNo || '–') + '</span></div>' +
+        '<div class="pir"><span class="pil">Program:</span><span class="piv">' + esc(est.pType || '–') + '</span></div>' +
+        '<div class="pir"><span class="pil">Program Date:</span><span class="piv">' + esc(est.pDate || '–') + '</span></div>' +
+      '</div>' +
+      '<div style="text-align:center;margin:12px 0;padding:12px;background:var(--crd);border-radius:10px">' +
+        '<div style="font-size:0.7rem;color:var(--tm);text-transform:uppercase;letter-spacing:0.5px">Payment Received</div>' +
+        '<div style="font-size:1.4rem;font-weight:900;color:var(--m)">₹' + pos.thisPayment.toLocaleString('en-IN') + '</div>' +
+        '<div style="font-size:0.75rem;color:var(--tm)">via ' + esc(pos.payment.mode) + '</div>' +
+        (pos.payment.notes ? '<div style="font-size:0.7rem;color:var(--tm);margin-top:3px;font-style:italic">' + esc(pos.payment.notes) + '</div>' : '') +
+      '</div>' +
+      '<div class="pts">' +
+        '<div>Net Amount: <strong>₹' + net.toLocaleString('en-IN') + '</strong></div>' +
+        (pos.previouslyPaid > 0 ? '<div>Previously Paid: <strong>₹' + pos.previouslyPaid.toLocaleString('en-IN') + '</strong></div>' : '') +
+        '<div>This Payment: <strong>₹' + pos.thisPayment.toLocaleString('en-IN') + '</strong></div>' +
+        '<div class="pgt">Total Paid: ₹' + pos.totalPaid.toLocaleString('en-IN') + '</div>' +
+        (due > 0 ? '<div style="color:var(--m);font-weight:800">Balance Due: ₹' + due.toLocaleString('en-IN') + '</div>' : '<div style="color:var(--ok-done);font-weight:800">✓ Fully Paid</div>') +
+      '</div>' +
+      docFooterHtml(settings) +
+    '</div>';
+
+  currentPrintData = est;
+  showPg('pg-print');
+}
+
+function sharePaymentReceiptWhatsApp(paymentId) {
+  const est = getEstById(currentEstId);
+  if (!est) return;
+  const pos = receiptLedgerPosition(est.id, paymentId);
+  if (!pos) return;
+  const receiptNo = getOrAssignReceiptNo(paymentId);
+  const settings = loadSettings();
+  const net = estAmounts(est).net;
+  const due = Math.max(0, net - pos.totalPaid);
+
+  let lines = [];
+  lines.push('🌸 *' + (settings.bizName || 'Roop Decorators') + '*');
+  lines.push('');
+  lines.push('*Payment Receipt*');
+  lines.push('');
+  lines.push('Receipt No: ' + receiptNo);
+  lines.push('Customer: ' + (est.cName || '-'));
+  lines.push('Estimate No: ' + (est.estNo || '-'));
+  lines.push('');
+  lines.push('Payment Received: ₹' + pos.thisPayment.toLocaleString('en-IN'));
+  lines.push('Mode: ' + pos.payment.mode);
+  lines.push('');
+  lines.push('Total Paid: ₹' + pos.totalPaid.toLocaleString('en-IN'));
+  lines.push('Balance Due: ₹' + due.toLocaleString('en-IN'));
+  lines.push('');
+  lines.push('Thank you! 🙏');
+  const text = lines.join('\n');
+  let phone = (est.cMob || '').replace(/\D/g, '');
+  if (phone.length === 10) phone = '91' + phone;
+  const url = (phone.length >= 10) ? ('https://wa.me/' + phone + '?text=' + encodeURIComponent(text)) : ('https://wa.me/?text=' + encodeURIComponent(text));
+  window.open(url, '_blank');
+}
+
+// Single dispatcher used by the pg-print WhatsApp button and by sharePDF()'s
+// fallback, so every document type opens WhatsApp with the message that
+// actually matches what's on screen (not always the plain Estimate text).
+function shareCurrentDocWhatsApp() {
+  if (currentDocType === 'receipt' && currentReceiptPaymentId) {
+    sharePaymentReceiptWhatsApp(currentReceiptPaymentId);
+  } else if (currentDocType === 'confirmation' || currentDocType === 'invoice' || currentDocType === 'finalbill') {
+    shareDocumentWhatsApp(currentDocType);
+  } else {
+    shareWhatsApp(currentPrintData);
+  }
+}
+
 function showPrint(estData) {
   const d = estData || buildCurrentEst();
   if (!d.cName) { showToast('Party name આપો'); return; }
   currentPrintData = d;
+  currentDocType = 'estimate';
   const activeItems = d.items.filter(it => (it.qty || 0) > 0);
   const total = activeItems.reduce((s, it) => s + (it.qty * getRate(it)), 0);
-  const adv = d.advance || 0;
   const net = total - (d.disc || 0);
-  const bal = net - adv;
+  // Phase 3's payment ledger is the source of truth once the estimate is
+  // saved (has an id) and has payment records; an unsaved draft preview
+  // (no id yet) falls back to the Advance field exactly as before, since
+  // there is no payment history to read.
+  let paid, due;
+  if (d.id) {
+    const pay = paymentSummary(d.id);
+    paid = pay.paid;
+    due = pay.due;
+  } else {
+    paid = d.advance || 0;
+    due = Math.max(0, net - paid);
+  }
   const settings = loadSettings();
 
   let rows = activeItems.map((it, idx) => {
@@ -1583,7 +1916,8 @@ function showPrint(estData) {
         '<div>Total: <strong>₹' + total.toLocaleString('en-IN') + '</strong></div>' +
         (d.disc ? '<div>Discount: <strong>₹' + d.disc.toLocaleString('en-IN') + '</strong></div>' : '') +
         '<div class="pgt">Net Amount: ₹' + net.toLocaleString('en-IN') + '</div>' +
-        (adv ? '<div>Advance Received: <strong>₹' + adv.toLocaleString('en-IN') + '</strong></div><div style="color:var(--m);font-weight:800">Balance Due: ₹' + bal.toLocaleString('en-IN') + '</div>' : '') +
+        (paid > 0 ? '<div>Paid: <strong>₹' + paid.toLocaleString('en-IN') + '</strong></div>' : '') +
+        (due > 0 ? '<div style="color:var(--m);font-weight:800">Due: ₹' + due.toLocaleString('en-IN') + '</div>' : '') +
       '</div>' +
       (d.pNotes ? '<div style="margin-top:8px;font-size:0.72rem;color:var(--tm)">Notes: ' + esc(d.pNotes) + '</div>' : '') +
       (settings.terms ? '<div class="pterms"><strong>Terms &amp; Conditions:</strong><br>' + esc(settings.terms).replace(/\n/g, '<br>') + '</div>' : '') +
@@ -1598,8 +1932,17 @@ function buildWaText(d) {
   const activeItems = d.items.filter(it => (it.qty || 0) > 0);
   const total = activeItems.reduce((s, it) => s + it.qty * getRate(it), 0);
   const net = total - (d.disc || 0);
-  const adv = d.advance || 0;
-  const bal = net - adv;
+  // Same rule as showPrint(): once the estimate is saved, the payment
+  // ledger is the source of truth for Paid/Due, not the raw advance field.
+  let paid, due;
+  if (d.id) {
+    const pay = paymentSummary(d.id);
+    paid = pay.paid;
+    due = pay.due;
+  } else {
+    paid = d.advance || 0;
+    due = Math.max(0, net - paid);
+  }
   let lines = [];
   lines.push('🌸 *' + (settings.bizName || 'Roop Decorators') + '* Estimate');
   if (d.estNo) lines.push('Estimate No: ' + d.estNo);
@@ -1616,10 +1959,8 @@ function buildWaText(d) {
   lines.push('Total: ₹' + total.toLocaleString('en-IN'));
   if (d.disc) lines.push('Discount: ₹' + d.disc.toLocaleString('en-IN'));
   lines.push('*Net Payable: ₹' + net.toLocaleString('en-IN') + '*');
-  if (adv) {
-    lines.push('Advance Received: ₹' + adv.toLocaleString('en-IN'));
-    lines.push('Balance Due: ₹' + bal.toLocaleString('en-IN'));
-  }
+  if (paid > 0) lines.push('Paid: ₹' + paid.toLocaleString('en-IN'));
+  if (due > 0) lines.push('Due: ₹' + due.toLocaleString('en-IN'));
   lines.push('');
   lines.push('Thank you! 🙏');
   return lines.join('\n');
@@ -1638,7 +1979,10 @@ function shareWhatsApp(d) {
 // ── PDF EXPORT / SHARE ─────────────────────────────────────
 function pdfFilename() {
   const base = (currentPrintData && currentPrintData.estNo) ? currentPrintData.estNo : 'Estimate';
-  return 'RoopDecorators_' + base + '.pdf';
+  const typeLabelMap = { estimate: 'Estimate', confirmation: 'BookingConfirmation', invoice: 'Invoice', finalbill: 'FinalBill', receipt: 'Receipt' };
+  const typeLabel = typeLabelMap[currentDocType] || 'Estimate';
+  const suffix = (currentDocType === 'receipt' && currentReceiptNo) ? currentReceiptNo : base;
+  return 'RoopDecorators_' + typeLabel + '_' + suffix + '.pdf';
 }
 
 function downloadPDF() {
@@ -1651,7 +1995,7 @@ function downloadPDF() {
 
 async function sharePDF() {
   if (!currentPrintData) { showToast('પહેલા Print ખોલો'); return; }
-  if (typeof html2pdf === 'undefined') { shareWhatsApp(currentPrintData); return; }
+  if (typeof html2pdf === 'undefined') { shareCurrentDocWhatsApp(); return; }
   try {
     const el = document.getElementById('pcont');
     const opt = { margin: 6, filename: pdfFilename(), image: { type: 'jpeg', quality: 0.92 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
@@ -1659,12 +2003,12 @@ async function sharePDF() {
     const blob = await html2pdf().set(opt).from(el).outputPdf('blob');
     const file = new File([blob], pdfFilename(), { type: 'application/pdf' });
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Estimate', text: buildWaText(currentPrintData) });
+      await navigator.share({ files: [file], title: pdfFilename(), text: (currentDocType === 'estimate' ? buildWaText(currentPrintData) : '') });
     } else {
-      shareWhatsApp(currentPrintData);
+      shareCurrentDocWhatsApp();
     }
   } catch (err) {
-    shareWhatsApp(currentPrintData);
+    shareCurrentDocWhatsApp();
   }
 }
 
@@ -1758,6 +2102,7 @@ function exportBackup() {
     settings: JSON.parse(localStorage.getItem('roop_settings') || 'null'),
     templates: JSON.parse(localStorage.getItem('roop_templates') || '[]'),
     counter: localStorage.getItem('roop_est_counter') || '0',
+    receiptCounter: localStorage.getItem('roop_receipt_counter') || '0',
     exportedAt: new Date().toISOString()
   };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -1782,15 +2127,16 @@ function importBackup(ev) {
       if (!confirm('હાલનો ડેટા replace થઈ જશે. Import કરવું છે?')) return;
       if (data.estimates) localStorage.setItem('roop_ests', JSON.stringify(data.estimates));
       if (data.trash) localStorage.setItem('roop_trash', JSON.stringify(data.trash));
-      // Older backups may lack `payments`/`customers`/`inventory` — treat
-      // that as an empty store rather than erroring, and never touch what's
-      // already saved.
+      // Older backups may lack `payments`/`customers`/`inventory`/
+      // `receiptCounter` — treat that as empty/zero rather than erroring,
+      // and never touch what's already saved.
       if (Array.isArray(data.payments)) localStorage.setItem('roop_payments', JSON.stringify(data.payments));
       if (Array.isArray(data.customers)) localStorage.setItem('roop_customers', JSON.stringify(data.customers));
       if (Array.isArray(data.inventory)) localStorage.setItem('roop_inventory', JSON.stringify(data.inventory));
       if (data.settings) localStorage.setItem('roop_settings', JSON.stringify(data.settings));
       if (data.templates) localStorage.setItem('roop_templates', JSON.stringify(data.templates));
       if (data.counter) localStorage.setItem('roop_est_counter', String(data.counter));
+      if (data.receiptCounter) localStorage.setItem('roop_receipt_counter', String(data.receiptCounter));
       showToast('✓ Import થયું, reload થાય છે...');
       setTimeout(() => location.reload(), 800);
     } catch (e) {
@@ -1810,6 +2156,7 @@ function clearAllData() {
   localStorage.removeItem('roop_inventory');
   localStorage.removeItem('roop_settings');
   localStorage.removeItem('roop_est_counter');
+  localStorage.removeItem('roop_receipt_counter');
   showToast('Data cleared, reloading...');
   setTimeout(() => location.reload(), 800);
 }
@@ -2193,6 +2540,7 @@ function renderPaymentSection() {
         (p.notes ? '<div class="pmt-notes">' + esc(p.notes) + '</div>' : '') +
         '<div class="pmt-actions">' +
           '<button class="btn bo" onclick="openPaymentForm(\'' + p.paymentId + '\')">✏️ Edit</button>' +
+          '<button class="btn bo" onclick="showPaymentReceipt(\'' + p.paymentId + '\')">🧾 Receipt</button>' +
           '<button class="btn" style="background:#c0392b;color:#fff" onclick="deletePayment(\'' + p.paymentId + '\')">🗑️ Delete</button>' +
         '</div>' +
       '</div>'

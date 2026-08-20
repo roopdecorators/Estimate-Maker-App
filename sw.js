@@ -1,4 +1,4 @@
-const CACHE = 'roop-decorators-v6';
+const CACHE = 'roop-decorators-v7';
 const ASSETS = [
   './',
   './index.html',
