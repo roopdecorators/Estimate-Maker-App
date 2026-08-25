@@ -194,6 +194,15 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 .doc-action-btn:active { background: var(--crd); }
 .doc-action-btn .dab-ic { font-size: 1rem; }
 
+/* ── ITEM CATALOG MANAGEMENT ──────────────────────────────── */
+.cat-group-title { font-size: 0.68rem; font-weight: 800; color: var(--m); text-transform: uppercase; letter-spacing: 0.5px; margin: 14px 0 6px; }
+.cat-item-row { background: #fff; border-radius: 10px; box-shadow: var(--sh); padding: 9px 10px; margin-bottom: 7px; display: flex; align-items: center; gap: 8px; }
+.cat-item-name { flex: 1; font-size: 0.8rem; font-weight: 700; color: var(--tx); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cat-item-rate { width: 78px; flex-shrink: 0; border: 1.5px solid #E8D5C0; border-radius: 7px; padding: 6px 8px; font-family: 'Nunito', sans-serif; font-size: 0.82rem; text-align: right; background: var(--cr); }
+.cat-move-btns { display: flex; flex-direction: column; gap: 2px; flex-shrink: 0; }
+.cat-move-btn { width: 26px; height: 22px; border: none; border-radius: 5px; background: var(--crd); color: var(--m); font-size: 0.68rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.cat-move-btn:disabled { opacity: 0.3; cursor: default; }
+
 .emp { text-align: center; padding: 36px 16px; color: var(--tm); }
 .eic { font-size: 2.8rem; margin-bottom: 8px; }
 
@@ -665,6 +674,14 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
     <div class="cb"><textarea class="fi" id="set-terms" rows="5" style="resize:vertical;font-family:'Nunito',sans-serif"></textarea></div>
   </div>
 
+  <div class="card">
+    <div class="ch">🧰 Item Catalog</div>
+    <div class="cb">
+      <p style="font-size:0.78rem;color:var(--tm);margin-bottom:10px">Item list order અને rates મેનેજ કરો — new estimates આ order/rates વાપરશે. Already-saved estimates ના rates બદલાશે નહિ.</p>
+      <button class="btn bo" style="width:100%" onclick="showPg('pg-item-catalog')">📋 Manage Items</button>
+    </div>
+  </div>
+
   <button class="btn bg bf" style="width:100%" onclick="saveSettingsForm()">💾 Save Settings</button>
 
   <div class="card" style="margin-top:14px">
@@ -682,6 +699,14 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   <button class="btn bg" id="install-app-btn" style="display:none;width:100%;margin-top:14px" onclick="installApp()">📲 Install App on Phone</button>
 
   <div style="text-align:center;font-size:0.7rem;color:var(--tm);margin-top:18px;padding-bottom:10px">Roop Decorators Estimate App ✦ v2.0</div>
+</div>
+
+<!-- ITEM CATALOG MANAGEMENT -->
+<div class="pg" id="pg-item-catalog">
+  <button class="btn bo" onclick="showPg('pg-set')">← Back to Settings</button>
+  <div style="font-size:0.72rem;color:var(--tm);margin:10px 0">▲▼ થી item list ની order બદલો, અને rate સીધું edit કરો. આ ફેરફારો ફક્ત નવા ઉમેરાતા items ને લાગુ પડશે — already-saved estimates ના rates યથાવત રહેશે.</div>
+  <button class="btn bd" style="width:100%;margin-bottom:12px" onclick="resetItemCatalog()">↺ Reset to Default Order &amp; Rates</button>
+  <div id="item-catalog-list"></div>
 </div>
 
 <!-- PRINT -->
@@ -1048,6 +1073,32 @@ const BASE = [
   {n:'ઝારા',p:20,c:'રસોઈ સાધનો'}
 ];
 
+// ── ITEM CATALOG CUSTOMIZATION (Settings → Manage Items) ────────
+// BASE holds the app's default catalog (name/rate/category). A saved
+// override in roop_item_catalog — same items, just reordered and/or
+// re-priced — is applied on top of it here, before anything else reads
+// BASE. This only changes what NEW items default to; every already-saved
+// estimate keeps its own snapshotted item rates untouched (buildCurrentEst
+// deep-clones `items` onto the estimate, it never references BASE live).
+const BASE_DEFAULT = BASE.map(b => ({ n: b.n, p: b.p, c: b.c }));
+(function applyItemCatalogOverride() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('roop_item_catalog') || 'null');
+    if (!Array.isArray(saved) || saved.length !== BASE.length) return;
+    const byName = {};
+    BASE.forEach(b => { byName[b.n] = b; });
+    // Every saved name must still exist in BASE_DEFAULT, or we ignore the
+    // override rather than risk corrupting the catalog.
+    if (!saved.every(s => byName[s.n])) return;
+    const reordered = saved.map(s => Object.assign(byName[s.n], { p: (typeof s.p === 'number' && s.p >= 0) ? s.p : byName[s.n].p }));
+    BASE.length = 0;
+    reordered.forEach(b => BASE.push(b));
+  } catch (e) { /* corrupted override — fall back to BASE_DEFAULT silently */ }
+})();
+function saveItemCatalogOverride() {
+  localStorage.setItem('roop_item_catalog', JSON.stringify(BASE.map(b => ({ n: b.n, p: b.p, c: b.c }))));
+}
+
 const CAT_LIST = [];
 BASE.forEach(b => { if (!CAT_LIST.includes(b.c)) CAT_LIST.push(b.c); });
 function catSlug(catName) {
@@ -1096,6 +1147,7 @@ function showPg(id) {
   if (id === 'pg-new')  { populateCustomerList(); populateTplQuickSwitch(); calcTot(); renderPaymentSection(); renderBookingInventoryStatus(); renderDocumentSection(); }
   if (id === 'pg-hist') { document.getElementById('nb-hist').classList.add('on'); renderHist(); }
   if (id === 'pg-set')  { renderSettingsForm(); }
+  if (id === 'pg-item-catalog') { renderItemCatalog(); }
   if (id === 'pg-tmpl-list') { renderTplList(); }
   if (id === 'pg-customers') { document.getElementById('nb-cust').classList.add('on'); renderCustomers(); }
   if (id === 'pg-customer-detail') { document.getElementById('nb-cust').classList.add('on'); renderCustomerDetail(); }
@@ -2045,6 +2097,56 @@ function renderSettingsForm() {
   if (s.logo) { prev.src = s.logo; prev.style.display = 'block'; } else { prev.style.display = 'none'; }
 }
 
+// ── ITEM CATALOG MANAGEMENT (Settings → Manage Items) ────────
+function renderItemCatalog() {
+  const cont = document.getElementById('item-catalog-list');
+  let lastCat = null;
+  let html = '';
+  BASE.forEach((b, i) => {
+    if (b.c !== lastCat) {
+      html += '<div class="cat-group-title">' + esc(b.c) + '</div>';
+      lastCat = b.c;
+    }
+    html +=
+      '<div class="cat-item-row">' +
+        '<span class="cat-item-name">' + esc(b.n) + '</span>' +
+        '<input class="cat-item-rate" type="number" min="0" value="' + b.p + '" onchange="updateItemCatalogRate(' + i + ', this.value)">' +
+        '<div class="cat-move-btns">' +
+          '<button class="cat-move-btn" ' + (i === 0 ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', -1)">▲</button>' +
+          '<button class="cat-move-btn" ' + (i === BASE.length - 1 ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', 1)">▼</button>' +
+        '</div>' +
+      '</div>';
+  });
+  cont.innerHTML = html;
+}
+
+function moveItemCatalog(index, dir) {
+  const target = index + dir;
+  if (target < 0 || target >= BASE.length) return;
+  const tmp = BASE[index];
+  BASE[index] = BASE[target];
+  BASE[target] = tmp;
+  saveItemCatalogOverride();
+  renderItemCatalog();
+}
+
+function updateItemCatalogRate(index, value) {
+  const rate = parseFloat(value);
+  if (isNaN(rate) || rate < 0) { showToast('Rate 0 થી ઓછો ન હોઈ શકે'); renderItemCatalog(); return; }
+  BASE[index].p = rate;
+  saveItemCatalogOverride();
+  showToast('✓ Rate updated');
+}
+
+function resetItemCatalog() {
+  if (!confirm('Item list ને default order અને rates પર પાછું લાવવું છે? Already-saved estimates ને અસર નહિ થાય.')) return;
+  BASE.length = 0;
+  BASE_DEFAULT.forEach(b => BASE.push({ n: b.n, p: b.p, c: b.c }));
+  localStorage.removeItem('roop_item_catalog');
+  renderItemCatalog();
+  showToast('✓ Default catalog પુનઃસ્થાપિત');
+}
+
 function saveSettingsForm() {
   const s = loadSettings();
   s.bizName = document.getElementById('set-bizname').value.trim() || 'Roop Decorators';
@@ -2099,6 +2201,7 @@ function exportBackup() {
     payments: JSON.parse(localStorage.getItem('roop_payments') || '[]'),
     customers: JSON.parse(localStorage.getItem('roop_customers') || '[]'),
     inventory: JSON.parse(localStorage.getItem('roop_inventory') || '[]'),
+    itemCatalog: JSON.parse(localStorage.getItem('roop_item_catalog') || '[]'),
     settings: JSON.parse(localStorage.getItem('roop_settings') || 'null'),
     templates: JSON.parse(localStorage.getItem('roop_templates') || '[]'),
     counter: localStorage.getItem('roop_est_counter') || '0',
@@ -2128,11 +2231,12 @@ function importBackup(ev) {
       if (data.estimates) localStorage.setItem('roop_ests', JSON.stringify(data.estimates));
       if (data.trash) localStorage.setItem('roop_trash', JSON.stringify(data.trash));
       // Older backups may lack `payments`/`customers`/`inventory`/
-      // `receiptCounter` — treat that as empty/zero rather than erroring,
-      // and never touch what's already saved.
+      // `itemCatalog`/`receiptCounter` — treat that as empty/zero rather
+      // than erroring, and never touch what's already saved.
       if (Array.isArray(data.payments)) localStorage.setItem('roop_payments', JSON.stringify(data.payments));
       if (Array.isArray(data.customers)) localStorage.setItem('roop_customers', JSON.stringify(data.customers));
       if (Array.isArray(data.inventory)) localStorage.setItem('roop_inventory', JSON.stringify(data.inventory));
+      if (Array.isArray(data.itemCatalog) && data.itemCatalog.length) localStorage.setItem('roop_item_catalog', JSON.stringify(data.itemCatalog));
       if (data.settings) localStorage.setItem('roop_settings', JSON.stringify(data.settings));
       if (data.templates) localStorage.setItem('roop_templates', JSON.stringify(data.templates));
       if (data.counter) localStorage.setItem('roop_est_counter', String(data.counter));
@@ -2154,6 +2258,7 @@ function clearAllData() {
   localStorage.removeItem('roop_payments');
   localStorage.removeItem('roop_customers');
   localStorage.removeItem('roop_inventory');
+  localStorage.removeItem('roop_item_catalog');
   localStorage.removeItem('roop_settings');
   localStorage.removeItem('roop_est_counter');
   localStorage.removeItem('roop_receipt_counter');
