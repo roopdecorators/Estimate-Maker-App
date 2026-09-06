@@ -704,8 +704,32 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 <!-- ITEM CATALOG MANAGEMENT -->
 <div class="pg" id="pg-item-catalog">
   <button class="btn bo" onclick="showPg('pg-set')">← Back to Settings</button>
-  <div style="font-size:0.72rem;color:var(--tm);margin:10px 0">▲▼ થી item list ની order બદલો, અને rate સીધું edit કરો. આ ફેરફારો ફક્ત નવા ઉમેરાતા items ને લાગુ પડશે — already-saved estimates ના rates યથાવત રહેશે.</div>
+  <div style="font-size:0.72rem;color:var(--tm);margin:10px 0">▲▼ થી category order અને item order બદલો, અને rate સીધું edit કરો. આ ફેરફારો ફક્ત નવા ઉમેરાતા items ને લાગુ પડશે — already-saved estimates ના rates યથાવત રહેશે.</div>
+
+  <button class="btn bg" style="width:100%;margin-bottom:9px" onclick="openAddCatalogItemForm()">➕ Add New Item</button>
+  <div class="pmt-form" id="add-catalog-item-form" style="display:none">
+    <div class="fr full"><div class="fg"><label class="fl">Item Name</label><input class="fi" id="new-item-name" type="text" placeholder="દા.ત. સોફા"></div></div>
+    <div class="fr">
+      <div class="fg"><label class="fl">Category</label>
+        <select class="fi" id="new-item-cat-select" onchange="toggleNewCatInput()"></select>
+      </div>
+      <div class="fg"><label class="fl">Rate</label><input class="fi" id="new-item-rate" type="number" min="0" placeholder="0"></div>
+    </div>
+    <div class="fr full" id="new-cat-name-row" style="display:none">
+      <div class="fg"><label class="fl">New Category Name</label><input class="fi" id="new-item-cat-custom" type="text" placeholder="Category name"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:6px">
+      <button class="btn bg" style="flex:1" onclick="saveNewCatalogItem()">💾 Add Item</button>
+      <button class="btn bo" style="flex:1" onclick="closeAddCatalogItemForm()">Cancel</button>
+    </div>
+  </div>
+
   <button class="btn bd" style="width:100%;margin-bottom:12px" onclick="resetItemCatalog()">↺ Reset to Default Order &amp; Rates</button>
+
+  <div class="cat-group-title">📂 Category Order</div>
+  <div id="cat-order-list"></div>
+
+  <div class="cat-group-title" style="margin-top:18px">📋 Items</div>
   <div id="item-catalog-list"></div>
 </div>
 
@@ -1023,6 +1047,30 @@ const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Satur
 const GU   = ['રવિવાર','સોમવાર','મંગળવાર','બુધવાર','ગુરુવાર','શુક્રવાર','શનિવાર'];
 
 const BASE = [
+  {n:'ડ્રમ',p:30,c:'વાસણો (મોટા)'},
+  {n:'ડેગ',p:50,c:'વાસણો (મોટા)'},
+  {n:'ઢક્કણ (લોખંડ)',p:10,c:'વાસણો (મોટા)'},
+  {n:'ઢક્કણ (જર્મન)',p:10,c:'વાસણો (મોટા)'},
+  {n:'સ્ટેન્ડ (મોટા)',p:10,c:'વાસણો (મોટા)'},
+  {n:'સ્ટેન્ડ (નાના)',p:10,c:'વાસણો (મોટા)'},
+  {n:'કેન્ચી',p:50,c:'વાસણો (મોટા)'},
+  {n:'તપેલા (મોટો)',p:300,c:'વાસણો (મોટા)'},
+  {n:'તપેલા (નાનો)',p:80,c:'વાસણો (મોટા)'},
+  {n:'તપેલા ઢક્કણ',p:10,c:'વાસણો (મોટા)'},
+  {n:'થાળ',p:5,c:'વાસણો (નાના)'},
+  {n:'તબક્ચા',p:4,c:'વાસણો (નાના)'},
+  {n:'કટોરા',p:4,c:'વાસણો (નાના)'},
+  {n:'ચમચી',p:2,c:'વાસણો (નાના)'},
+  {n:'ડોલ',p:20,c:'વાસણો (નાના)'},
+  {n:'ડોઇ',p:10,c:'વાસણો (નાના)'},
+  {n:'નાવડી',p:50,c:'વાસણો (નાના)'},
+  {n:'જગ',p:10,c:'વાસણો (નાના)'},
+  {n:'કબગીર',p:30,c:'વાસણો (નાના)'},
+  {n:'બિરયાની ચમચા',p:20,c:'વાસણો (નાના)'},
+  {n:'સિંગલ ચુલો',p:250,c:'રસોઈ સાધનો'},
+  {n:'ટી ચુલો',p:500,c:'રસોઈ સાધનો'},
+  {n:'કડાઈ',p:100,c:'રસોઈ સાધનો'},
+  {n:'ઝારા',p:20,c:'રસોઈ સાધનો'},
   {n:'મંડપ ગાલા',p:500,c:'મંડપ અને પરદા'},
   {n:'સાઇડ પરદા',p:15,c:'મંડપ અને પરદા'},
   {n:'ખડા પરદા',p:100,c:'મંડપ અને પરદા'},
@@ -1046,31 +1094,7 @@ const BASE = [
   {n:'ગાદલા',p:40,c:'બેડિંગ'},
   {n:'તકિયા',p:10,c:'બેડિંગ'},
   {n:'કમ્મલ',p:10,c:'બેડિંગ'},
-  {n:'લોડીંગ ફેરા',p:500,c:'લોડિંગ'},
-  {n:'ડેગ',p:50,c:'વાસણો (મોટા)'},
-  {n:'ઢક્કણ (લોખંડ)',p:10,c:'વાસણો (મોટા)'},
-  {n:'ઢક્કણ (જર્મન)',p:10,c:'વાસણો (મોટા)'},
-  {n:'સ્ટેન્ડ (મોટા)',p:10,c:'વાસણો (મોટા)'},
-  {n:'સ્ટેન્ડ (નાના)',p:10,c:'વાસણો (મોટા)'},
-  {n:'કેન્ચી',p:50,c:'વાસણો (મોટા)'},
-  {n:'તપેલા (મોટો)',p:300,c:'વાસણો (મોટા)'},
-  {n:'તપેલા (નાનો)',p:80,c:'વાસણો (મોટા)'},
-  {n:'તપેલા ઢક્કણ',p:10,c:'વાસણો (મોટા)'},
-  {n:'ડ્રમ',p:30,c:'વાસણો (મોટા)'},
-  {n:'થાળ',p:5,c:'વાસણો (નાના)'},
-  {n:'તબક્ચા',p:4,c:'વાસણો (નાના)'},
-  {n:'કટોરા',p:4,c:'વાસણો (નાના)'},
-  {n:'ચમચી',p:2,c:'વાસણો (નાના)'},
-  {n:'ડોલ',p:20,c:'વાસણો (નાના)'},
-  {n:'ડોઇ',p:10,c:'વાસણો (નાના)'},
-  {n:'નાવડી',p:50,c:'વાસણો (નાના)'},
-  {n:'જગ',p:10,c:'વાસણો (નાના)'},
-  {n:'કબગીર',p:30,c:'વાસણો (નાના)'},
-  {n:'બિરયાની ચમચા',p:20,c:'વાસણો (નાના)'},
-  {n:'સિંગલ ચુલો',p:250,c:'રસોઈ સાધનો'},
-  {n:'ટી ચુલો',p:500,c:'રસોઈ સાધનો'},
-  {n:'કડાઈ',p:100,c:'રસોઈ સાધનો'},
-  {n:'ઝારા',p:20,c:'રસોઈ સાધનો'}
+  {n:'લોડીંગ ફેરા',p:500,c:'લોડિંગ'}
 ];
 
 // ── ITEM CATALOG CUSTOMIZATION (Settings → Manage Items) ────────
@@ -2098,7 +2122,114 @@ function renderSettingsForm() {
 }
 
 // ── ITEM CATALOG MANAGEMENT (Settings → Manage Items) ────────
+// Returns the current contiguous category blocks in BASE's live order —
+// recomputed fresh every time, so it always reflects the latest reordering
+// (never relies on the static CAT_LIST, which is just an id-slug registry).
+function getCategoryBlocks() {
+  const blocks = [];
+  let curCat = null, start = 0;
+  BASE.forEach((b, i) => {
+    if (b.c !== curCat) {
+      if (curCat !== null) blocks.push({ cat: curCat, start: start, end: i - 1 });
+      curCat = b.c;
+      start = i;
+    }
+  });
+  if (curCat !== null) blocks.push({ cat: curCat, start: start, end: BASE.length - 1 });
+  return blocks;
+}
+
+function renderCategoryOrderSection() {
+  const blocks = getCategoryBlocks();
+  const cont = document.getElementById('cat-order-list');
+  cont.innerHTML = blocks.map((blk, i) =>
+    '<div class="cat-item-row">' +
+      '<span class="cat-item-name">' + esc(blk.cat) + '</span>' +
+      '<div class="cat-move-btns">' +
+        '<button class="cat-move-btn" ' + (i === 0 ? 'disabled' : '') + ' onclick="moveCategoryBlock(' + i + ', -1)">▲</button>' +
+        '<button class="cat-move-btn" ' + (i === blocks.length - 1 ? 'disabled' : '') + ' onclick="moveCategoryBlock(' + i + ', 1)">▼</button>' +
+      '</div>' +
+    '</div>'
+  ).join('');
+}
+
+// ── ADD NEW CATALOG ITEM ─────────────────────────────────────
+function openAddCatalogItemForm() {
+  const sel = document.getElementById('new-item-cat-select');
+  const cats = getCategoryBlocks().map(b => b.cat);
+  sel.innerHTML = cats.map(c => '<option value="' + esc(c) + '">' + esc(c) + '</option>').join('') +
+    '<option value="__new__">+ New Category</option>';
+  document.getElementById('new-item-name').value = '';
+  document.getElementById('new-item-rate').value = '';
+  document.getElementById('new-item-cat-custom').value = '';
+  document.getElementById('new-cat-name-row').style.display = 'none';
+  document.getElementById('add-catalog-item-form').style.display = 'block';
+}
+
+function closeAddCatalogItemForm() {
+  document.getElementById('add-catalog-item-form').style.display = 'none';
+}
+
+function toggleNewCatInput() {
+  const sel = document.getElementById('new-item-cat-select');
+  document.getElementById('new-cat-name-row').style.display = (sel.value === '__new__') ? 'block' : 'none';
+}
+
+// New items are appended at the end of their chosen category's block (or
+// as a brand new category at the end of the whole list). Only ever appends
+// to BASE / roop_item_catalog — never touches any already-saved estimate.
+function saveNewCatalogItem() {
+  const name = document.getElementById('new-item-name').value.trim();
+  if (!name) { showToast('Item Name જરૂરી છે'); return; }
+  const rate = parseFloat(document.getElementById('new-item-rate').value);
+  if (isNaN(rate) || rate < 0) { showToast('Rate 0 થી ઓછો ન હોઈ શકે'); return; }
+
+  const dup = BASE.some(b => b.n.trim().toLowerCase() === name.toLowerCase());
+  if (dup) { showToast('⚠️ "' + name + '" પહેલેથી Catalog માં છે'); return; }
+
+  const sel = document.getElementById('new-item-cat-select');
+  let cat = sel.value;
+  if (cat === '__new__') {
+    cat = document.getElementById('new-item-cat-custom').value.trim();
+    if (!cat) { showToast('Category name જરૂરી છે'); return; }
+  }
+
+  const newItem = { n: name, p: rate, c: cat };
+  const existingBlock = getCategoryBlocks().find(b => b.cat === cat);
+  if (existingBlock) {
+    BASE.splice(existingBlock.end + 1, 0, newItem); // end of its own category
+  } else {
+    BASE.push(newItem); // brand new category, added at the end
+  }
+  saveItemCatalogOverride();
+  closeAddCatalogItemForm();
+  renderItemCatalog();
+  showToast('✓ "' + name + '" ઉમેરાયું');
+}
+
+// Swaps two ADJACENT category blocks (with every item they contain) as one
+// unit — item order within each category is untouched. A swap is symmetric,
+// so this is direction-agnostic: whichever block sits earlier in the array
+// always trades places with whichever sits later, regardless of which row's
+// ▲/▼ button was pressed.
+function moveCategoryBlock(catIndex, dir) {
+  const blocks = getCategoryBlocks();
+  const targetIndex = catIndex + dir;
+  if (targetIndex < 0 || targetIndex >= blocks.length) return;
+  const a = blocks[catIndex], b = blocks[targetIndex];
+  const earlier = a.start < b.start ? a : b;
+  const later = a.start < b.start ? b : a;
+  const earlierItems = BASE.slice(earlier.start, earlier.end + 1);
+  const laterItems = BASE.slice(later.start, later.end + 1);
+  const newOrder = laterItems.concat(earlierItems);
+  BASE.splice(earlier.start, (later.end - earlier.start + 1), ...newOrder);
+  saveItemCatalogOverride();
+  showToast('✓ Category order updated');
+  renderItemCatalog();
+}
+
 function renderItemCatalog() {
+  renderCategoryOrderSection();
   const cont = document.getElementById('item-catalog-list');
   let lastCat = null;
   let html = '';
@@ -2107,26 +2238,32 @@ function renderItemCatalog() {
       html += '<div class="cat-group-title">' + esc(b.c) + '</div>';
       lastCat = b.c;
     }
+    const atTopOfCat = (i === 0) || (BASE[i - 1].c !== b.c);
+    const atBottomOfCat = (i === BASE.length - 1) || (BASE[i + 1].c !== b.c);
     html +=
       '<div class="cat-item-row">' +
         '<span class="cat-item-name">' + esc(b.n) + '</span>' +
         '<input class="cat-item-rate" type="number" min="0" value="' + b.p + '" onchange="updateItemCatalogRate(' + i + ', this.value)">' +
         '<div class="cat-move-btns">' +
-          '<button class="cat-move-btn" ' + (i === 0 ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', -1)">▲</button>' +
-          '<button class="cat-move-btn" ' + (i === BASE.length - 1 ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', 1)">▼</button>' +
+          '<button class="cat-move-btn" ' + (atTopOfCat ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', -1)">▲</button>' +
+          '<button class="cat-move-btn" ' + (atBottomOfCat ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', 1)">▼</button>' +
         '</div>' +
       '</div>';
   });
   cont.innerHTML = html;
 }
 
+// Item reorder is always confined to its own category — it will never swap
+// across a category boundary (that's what moveCategoryBlock is for).
 function moveItemCatalog(index, dir) {
   const target = index + dir;
   if (target < 0 || target >= BASE.length) return;
+  if (BASE[target].c !== BASE[index].c) return;
   const tmp = BASE[index];
   BASE[index] = BASE[target];
   BASE[target] = tmp;
   saveItemCatalogOverride();
+  showToast('✓ Item order updated');
   renderItemCatalog();
 }
 
