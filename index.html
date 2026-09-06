@@ -706,6 +706,7 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
   <button class="btn bo" onclick="showPg('pg-set')">← Back to Settings</button>
   <div style="font-size:0.72rem;color:var(--tm);margin:10px 0">▲▼ થી category order અને item order બદલો, અને rate સીધું edit કરો. આ ફેરફારો ફક્ત નવા ઉમેરાતા items ને લાગુ પડશે — already-saved estimates ના rates યથાવત રહેશે.</div>
 
+  <button class="btn bg" style="width:100%;margin-bottom:9px" onclick="saveAllCatalogChanges()">💾 Save Changes</button>
   <button class="btn bg" style="width:100%;margin-bottom:9px" onclick="openAddCatalogItemForm()">➕ Add New Item</button>
   <div class="pmt-form" id="add-catalog-item-form" style="display:none">
     <div class="fr full"><div class="fg"><label class="fl">Item Name</label><input class="fi" id="new-item-name" type="text" placeholder="દા.ત. સોફા"></div></div>
@@ -731,6 +732,8 @@ body { font-family: 'Nunito', sans-serif; background: var(--cr); color: var(--tx
 
   <div class="cat-group-title" style="margin-top:18px">📋 Items</div>
   <div id="item-catalog-list"></div>
+
+  <button class="btn bg" style="width:100%;margin-top:14px" onclick="saveAllCatalogChanges()">💾 Save Changes</button>
 </div>
 
 <!-- PRINT -->
@@ -2243,7 +2246,7 @@ function renderItemCatalog() {
     html +=
       '<div class="cat-item-row">' +
         '<span class="cat-item-name">' + esc(b.n) + '</span>' +
-        '<input class="cat-item-rate" type="number" min="0" value="' + b.p + '" onchange="updateItemCatalogRate(' + i + ', this.value)">' +
+        '<input class="cat-item-rate" type="number" min="0" value="' + b.p + '" data-idx="' + i + '" onchange="updateItemCatalogRate(' + i + ', this.value)">' +
         '<div class="cat-move-btns">' +
           '<button class="cat-move-btn" ' + (atTopOfCat ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', -1)">▲</button>' +
           '<button class="cat-move-btn" ' + (atBottomOfCat ? 'disabled' : '') + ' onclick="moveItemCatalog(' + i + ', 1)">▼</button>' +
@@ -2273,6 +2276,24 @@ function updateItemCatalogRate(index, value) {
   BASE[index].p = rate;
   saveItemCatalogOverride();
   showToast('✓ Rate updated');
+}
+
+// Reordering and per-field rate edits already auto-save as you go — this
+// button exists for peace of mind, and also catches any rate you've typed
+// but not yet tabbed/clicked away from (which onchange alone wouldn't have
+// picked up), so nothing typed on screen is ever lost.
+function saveAllCatalogChanges() {
+  const inputs = document.querySelectorAll('#item-catalog-list .cat-item-rate');
+  let hadInvalid = false;
+  inputs.forEach(inp => {
+    const idx = parseInt(inp.dataset.idx, 10);
+    const rate = parseFloat(inp.value);
+    if (isNaN(rate) || rate < 0) { hadInvalid = true; return; }
+    if (BASE[idx]) BASE[idx].p = rate;
+  });
+  saveItemCatalogOverride();
+  renderItemCatalog();
+  showToast(hadInvalid ? '⚠️ કેટલાક rates અમાન્ય હતા — બાકીના બધા ફેરફારો સેવ થયા' : '✓ બધા ફેરફારો સેવ થયા');
 }
 
 function resetItemCatalog() {
